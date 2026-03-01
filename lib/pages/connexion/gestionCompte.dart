@@ -144,6 +144,8 @@ class _GlobalLocationIndicatorState extends State<GlobalLocationIndicator> {
 
   @override
   Widget build(BuildContext context) {
+    if (!widget.showDetectionStatus) return const SizedBox.shrink();
+
     if (_currentResult == null) {
       return _buildLoadingIndicator();
     }
@@ -604,6 +606,8 @@ class _GlobalCountryPickerFieldState extends State<GlobalCountryPickerField> {
               decoration: InputDecoration(
                 hintText: 'Numéro Whatsapp',
                 hintStyle: TextStyle(color: Colors.grey[400]),
+                filled: true,
+                fillColor: Colors.transparent,
                 border: InputBorder.none,
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16),
               ),
@@ -713,6 +717,8 @@ class AuthFormField extends StatelessWidget {
         hintStyle: TextStyle(color: Colors.grey[400]),
         prefixIcon: Icon(prefixIcon, color: Colors.white),
         suffixIcon: suffixIcon,
+        filled: true,
+        fillColor: Colors.transparent,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(100000),
           borderSide: BorderSide(color: Colors.grey[400]!),
@@ -886,41 +892,36 @@ class _AuthentificationPageState extends State<AuthentificationPage>
   Widget _buildForm(BuildContext context, double formWidth) {
     return Column(
       children: [
-        // Bouton Apple (iOS uniquement)
-        if (Platform.isIOS)
-          Column(
-            children: [
+        // Boutons sociaux compacts
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (Platform.isIOS) ...[
               AppleSignInButton(
-                text: 'Se connecter avec Apple',
                 onPressed: _signInWithApple,
                 isLoading: _isAppleLoading,
               ),
-              const SizedBox(height: 12),
+              const SizedBox(width: 20),
             ],
-          ),
-
-        // Bouton Google
-        GoogleSignInButton(
-          text: 'Se connecter avec Google',
-          onPressed: _signInWithGoogle,
-          isLoading: _isGoogleLoading,
+            GoogleSignInButton(
+              onPressed: _signInWithGoogle,
+              isLoading: _isGoogleLoading,
+            ),
+          ],
         ),
 
         // Séparateur "OU"
         const OrDivider(),
 
-        // Indicateur de géolocalisation globale
+        // Géolocalisation active en arrière-plan (indicateur masqué)
         if (_globalLocationResult != null)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: GlobalLocationIndicator(
-              onLocationUpdate: (country) {
-                setState(() {
-                  selectedCountry = country;
-                });
-              },
-              showDetectionStatus: true,
-            ),
+          GlobalLocationIndicator(
+            onLocationUpdate: (country) {
+              setState(() {
+                selectedCountry = country;
+              });
+            },
+            showDetectionStatus: false,
           ),
 
         // Champ de téléphone avec pays auto-détecté
@@ -1559,7 +1560,8 @@ class _SignupPageState extends State<SignupPage> with KeyboardAwareState {
 
   bool _obscurePassword = true;
   bool _isLoading = false;
-  bool _isGoogleLoading = false; // AJOUTER cette variable
+  bool _isGoogleLoading = false;
+  bool _isAppleLoading = false;
 
   // Variables de géolocalisation
   Country selectedCountry = countries.isNotEmpty
@@ -1771,14 +1773,25 @@ class _SignupPageState extends State<SignupPage> with KeyboardAwareState {
       key: _formKey,
       child: Column(
         children: [
-          // AJOUTER: Bouton Google en premier
-          GoogleSignInButton(
-            text: 'S\'inscrire avec Google',
-            onPressed: _signUpWithGoogle,
-            isLoading: _isGoogleLoading,
+          // Boutons sociaux compacts
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (Platform.isIOS) ...[
+                AppleSignInButton(
+                  onPressed: _signInWithApple,
+                  isLoading: _isAppleLoading,
+                ),
+                const SizedBox(width: 20),
+              ],
+              GoogleSignInButton(
+                onPressed: _signUpWithGoogle,
+                isLoading: _isGoogleLoading,
+              ),
+            ],
           ),
 
-          // AJOUTER: Séparateur "OU"
+          // Séparateur "OU"
           const OrDivider(),
 
           // Champ nom complet
@@ -1794,18 +1807,15 @@ class _SignupPageState extends State<SignupPage> with KeyboardAwareState {
           ),
           const SizedBox(height: 16),
 
-          // Indicateur de géolocalisation globale
+          // Géolocalisation active en arrière-plan (indicateur masqué)
           if (_globalLocationResult != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: GlobalLocationIndicator(
-                onLocationUpdate: (country) {
-                  setState(() {
-                    selectedCountry = country;
-                  });
-                },
-                showDetectionStatus: true,
-              ),
+            GlobalLocationIndicator(
+              onLocationUpdate: (country) {
+                setState(() {
+                  selectedCountry = country;
+                });
+              },
+              showDetectionStatus: false,
             ),
 
           // Champ téléphone avec pays auto-détecté
@@ -2203,22 +2213,27 @@ class _SignupPageState extends State<SignupPage> with KeyboardAwareState {
     );
   }
 
-  // AJOUTER cette méthode
   Future<void> _signUpWithGoogle() async {
     setState(() => _isGoogleLoading = true);
-
     try {
       final authService = AuthService(context);
-      await authService
-          .loginWithGoogle(); // Même méthode car l'API gère création/connexion
+      await authService.loginWithGoogle();
     } catch (e) {
-      if (mounted) {
-        _showErrorDialog(e.toString());
-      }
+      if (mounted) _showErrorDialog(e.toString());
     } finally {
-      if (mounted) {
-        setState(() => _isGoogleLoading = false);
-      }
+      if (mounted) setState(() => _isGoogleLoading = false);
+    }
+  }
+
+  Future<void> _signInWithApple() async {
+    setState(() => _isAppleLoading = true);
+    try {
+      final authService = AuthService(context);
+      await authService.loginWithApple();
+    } catch (e) {
+      if (mounted) _showErrorDialog(e.toString());
+    } finally {
+      if (mounted) setState(() => _isAppleLoading = false);
     }
   }
 }
@@ -3015,18 +3030,15 @@ class _GoogleProfileCompletionPageState
   Widget _buildForm() {
     return Column(
       children: [
-        // Indicateur de géolocalisation
+        // Géolocalisation active en arrière-plan (indicateur masqué)
         if (_globalLocationResult != null)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: GlobalLocationIndicator(
-              onLocationUpdate: (country) {
-                setState(() {
-                  selectedCountry = country;
-                });
-              },
-              showDetectionStatus: true,
-            ),
+          GlobalLocationIndicator(
+            onLocationUpdate: (country) {
+              setState(() {
+                selectedCountry = country;
+              });
+            },
+            showDetectionStatus: false,
           ),
 
         // Champ de téléphone avec pays auto-détecté
@@ -3252,143 +3264,122 @@ class _GoogleProfileCompletionPageState
   }
 }
 
-// ========== WIDGET BOUTON GOOGLE À AJOUTER DANS gestionCompte.dart ==========
+// ========== BOUTONS SOCIAUX COMPACTS ==========
 
-class GoogleSignInButton extends StatefulWidget {
-  final String text;
+class GoogleSignInButton extends StatelessWidget {
   final VoidCallback onPressed;
   final bool isLoading;
+  // text gardé pour compatibilité mais non utilisé
+  final String text;
 
   const GoogleSignInButton({
     super.key,
-    required this.text,
     required this.onPressed,
     this.isLoading = false,
+    this.text = '',
   });
 
   @override
-  _GoogleSignInButtonState createState() => _GoogleSignInButtonState();
-}
-
-class _GoogleSignInButtonState extends State<GoogleSignInButton> {
-  @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: widget.isLoading ? null : widget.onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black87,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(100000),
-          ),
-          elevation: 2,
-        ),
-        child: widget.isLoading
-            ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 3,
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(AppConfig.primaryColor),
-                ),
-              )
-            : Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Logo Google
-                  Container(
-                    width: 20,
-                    height: 20,
-                    decoration: const BoxDecoration(
-                      image: DecorationImage(
-                        image: NetworkImage(
-                            'https://developers.google.com/identity/images/g-logo.png'),
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    widget.text,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black87,
-                    ),
-                  ),
-                ],
+    return _SocialCircleButton(
+      onPressed: onPressed,
+      isLoading: isLoading,
+      backgroundColor: Colors.white,
+      borderColor: Colors.white,
+      child: isLoading
+          ? const SizedBox(
+              width: 22,
+              height: 22,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+                valueColor: AlwaysStoppedAnimation<Color>(AppConfig.primaryColor),
               ),
-      ),
+            )
+          : Image.network(
+              'https://developers.google.com/identity/images/g-logo.png',
+              width: 24,
+              height: 24,
+              errorBuilder: (_, __, ___) => const Text(
+                'G',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF4285F4),
+                ),
+              ),
+            ),
     );
   }
 }
 
-// ========== BOUTON SIGN IN WITH APPLE ==========
-class AppleSignInButton extends StatefulWidget {
-  final String text;
+class AppleSignInButton extends StatelessWidget {
   final VoidCallback onPressed;
   final bool isLoading;
+  final String text;
 
   const AppleSignInButton({
     super.key,
-    required this.text,
     required this.onPressed,
     this.isLoading = false,
+    this.text = '',
   });
 
   @override
-  _AppleSignInButtonState createState() => _AppleSignInButtonState();
+  Widget build(BuildContext context) {
+    return _SocialCircleButton(
+      onPressed: onPressed,
+      isLoading: isLoading,
+      backgroundColor: Colors.white,
+      borderColor: Colors.white,
+      child: isLoading
+          ? const SizedBox(
+              width: 22,
+              height: 22,
+              child: CircularProgressIndicator(
+                strokeWidth: 2.5,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+              ),
+            )
+          : const Icon(Icons.apple, size: 28, color: Colors.black),
+    );
+  }
 }
 
-class _AppleSignInButtonState extends State<AppleSignInButton> {
+class _SocialCircleButton extends StatelessWidget {
+  final VoidCallback onPressed;
+  final bool isLoading;
+  final Color backgroundColor;
+  final Color borderColor;
+  final Widget child;
+
+  const _SocialCircleButton({
+    required this.onPressed,
+    required this.isLoading,
+    required this.backgroundColor,
+    required this.borderColor,
+    required this.child,
+  });
+
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        onPressed: widget.isLoading ? null : widget.onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.black,
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(100000),
-          ),
-          elevation: 2,
+    return GestureDetector(
+      onTap: isLoading ? null : onPressed,
+      child: Container(
+        width: 52,
+        height: 52,
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          shape: BoxShape.circle,
+          border: Border.all(color: borderColor, width: 1.5),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.15),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
-        child: widget.isLoading
-            ? const SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 3,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                ),
-              )
-            : Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Logo Apple
-                  const Icon(
-                    Icons.apple,
-                    size: 24,
-                    color: Colors.white,
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    widget.text,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
+        child: Center(child: child),
       ),
     );
   }

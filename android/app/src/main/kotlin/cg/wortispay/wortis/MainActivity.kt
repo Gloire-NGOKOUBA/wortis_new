@@ -1,0 +1,5 @@
+package cg.wortispay.wortis
+
+import io.flutter.embedding.android.FlutterActivity
+
+class MainActivity : FlutterActivity()

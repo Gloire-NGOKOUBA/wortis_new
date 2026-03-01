@@ -1592,7 +1592,7 @@ class AuthService {
 
       // 2. Appel API backend
       final response = await http.post(
-        Uri.parse('$baseUrl/famlink/api/auth/google/login'),
+        Uri.parse('$baseUrl/google/login'),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "google_token": googleToken,
@@ -1728,7 +1728,7 @@ class AuthService {
           '✅ [GoogleAuth] Pays final: $finalCountryName (Code: $finalCountryCode)');
 
       final response = await http.post(
-        Uri.parse('$baseUrl/famlink/api/auth/google/complete-profile'),
+        Uri.parse('$baseUrl/google/complete-profile'),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "completion_token": completionToken,
@@ -1877,7 +1877,7 @@ class AuthService {
 
   // ========== FINALISATION PROFIL APPLE ==========
   Future<void> completeAppleProfile(
-      String completionToken, String phone) async {
+      String completionToken, String phone, {String nom = ''}) async {
     try {
       print('🔵 [AppleAuth] Finalisation du profil');
 
@@ -1922,6 +1922,7 @@ class AuthService {
         body: jsonEncode({
           "completion_token": completionToken,
           "phone": phone,
+          "nom": nom,
           "country_name": finalCountryName,
           "country_code": finalCountryCode,
           "zone_benef": finalCountryName,

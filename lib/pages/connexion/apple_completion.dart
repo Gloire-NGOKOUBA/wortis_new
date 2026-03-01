@@ -24,8 +24,17 @@ class AppleProfileCompletionPage extends StatefulWidget {
 class _AppleProfileCompletionPageState
     extends State<AppleProfileCompletionPage> with KeyboardAwareState {
   final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _prenomController = TextEditingController();
+  final TextEditingController _nomController = TextEditingController();
   final FocusNode _phoneFocusNode = FocusNode();
+  final FocusNode _prenomFocusNode = FocusNode();
+  final FocusNode _nomFocusNode = FocusNode();
   bool _isLoading = false;
+
+  bool get _needsName {
+    final nom = (widget.userData['nom'] ?? '').toString().trim();
+    return nom.isEmpty;
+  }
 
   // Variables de géolocalisation
   Country selectedCountry = countries.isNotEmpty
@@ -66,7 +75,11 @@ class _AppleProfileCompletionPageState
   @override
   void dispose() {
     _phoneController.dispose();
+    _prenomController.dispose();
+    _nomController.dispose();
     _phoneFocusNode.dispose();
+    _prenomFocusNode.dispose();
+    _nomFocusNode.dispose();
     super.dispose();
   }
 
@@ -140,18 +153,67 @@ class _AppleProfileCompletionPageState
   Widget _buildForm() {
     return Column(
       children: [
-        // Indicateur de géolocalisation
-        if (_globalLocationResult != null)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 16),
-            child: GlobalLocationIndicator(
-              onLocationUpdate: (country) {
-                setState(() {
-                  selectedCountry = country;
-                });
-              },
-              showDetectionStatus: true,
+        // ── Champs Prénom / Nom si Apple ne les a pas fournis ──
+        if (_needsName) ...[
+          TextField(
+            controller: _prenomController,
+            focusNode: _prenomFocusNode,
+            textInputAction: TextInputAction.next,
+            onSubmitted: (_) =>
+                FocusScope.of(context).requestFocus(_nomFocusNode),
+            style: const TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+              hintText: 'Prénom',
+              hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
+              prefixIcon:
+                  Icon(Icons.person_outline, color: Colors.white.withOpacity(0.7)),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide:
+                    BorderSide(color: Colors.white.withOpacity(0.4)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Colors.white),
+              ),
             ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _nomController,
+            focusNode: _nomFocusNode,
+            textInputAction: TextInputAction.next,
+            onSubmitted: (_) =>
+                FocusScope.of(context).requestFocus(_phoneFocusNode),
+            style: const TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+              hintText: 'Nom de famille',
+              hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
+              prefixIcon:
+                  Icon(Icons.badge_outlined, color: Colors.white.withOpacity(0.7)),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide:
+                    BorderSide(color: Colors.white.withOpacity(0.4)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Colors.white),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+        ],
+
+        // Géolocalisation active en arrière-plan (indicateur masqué)
+        if (_globalLocationResult != null)
+          GlobalLocationIndicator(
+            onLocationUpdate: (country) {
+              setState(() {
+                selectedCountry = country;
+              });
+            },
+            showDetectionStatus: false,
           ),
 
         // Champ de téléphone avec pays auto-détecté
@@ -210,17 +272,25 @@ class _AppleProfileCompletionPageState
     try {
       // Préparer le numéro avec l'indicatif
       String phoneWithCode = _phoneController.text.trim();
-
-      // Si le numéro ne commence pas par +, ajouter l'indicatif du pays
       if (!phoneWithCode.startsWith('+')) {
         phoneWithCode = selectedCountry.dialCode + phoneWithCode;
       }
 
-      print('🔵 [AppleProfile] Finalisation avec téléphone: $phoneWithCode');
+      // Construire le nom complet
+      String nom;
+      if (_needsName) {
+        final prenom = _prenomController.text.trim();
+        final nomFamille = _nomController.text.trim();
+        nom = '$prenom $nomFamille'.trim();
+      } else {
+        nom = (widget.userData['nom'] ?? '').toString().trim();
+      }
+
+      print('🔵 [AppleProfile] Finalisation — tél: $phoneWithCode, nom: $nom');
 
       final authService = AuthService(context);
       await authService.completeAppleProfile(
-          widget.completionToken, phoneWithCode);
+          widget.completionToken, phoneWithCode, nom: nom);
     } catch (e) {
       _showErrorDialog(e.toString());
     } finally {
@@ -231,6 +301,18 @@ class _AppleProfileCompletionPageState
   }
 
   bool _validateInput() {
+    // Vérifier les champs nom/prénom si nécessaire
+    if (_needsName) {
+      if (_prenomController.text.trim().isEmpty) {
+        _showErrorSnackBar('Le prénom est requis');
+        return false;
+      }
+      if (_nomController.text.trim().isEmpty) {
+        _showErrorSnackBar('Le nom de famille est requis');
+        return false;
+      }
+    }
+
     final String phone = _phoneController.text.trim();
 
     if (phone.isEmpty) {
