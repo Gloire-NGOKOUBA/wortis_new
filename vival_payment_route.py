@@ -436,3 +436,62 @@ def apk_get_vival_order(order_id):
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@app.route('/acceuil_apk_wpay_v2_test/<user_id>', methods=['GET'])
+def acceuil_apk_wpay_v2_test(user_id):
+    # Préparer les versions du token pour gérer l'encodage
+    token_decoded = urllib.parse.unquote(user_id)
+    token_encoded = urllib.parse.quote(user_id)
+    
+    # Vérifier d'abord si l'utilisateur existe avec l'une des variantes du token
+    user = client.APK_ARCHIVE.Users.find_one({
+        'token': {'$in': [user_id, token_decoded, token_encoded]}
+    })
+    
+    if not user:
+        return jsonify({'error': 'Utilisateur non trouvé.'}), 404
+    
+    # Utiliser le token réel trouvé dans la base de données
+    actual_token = user.get('token')
+    
+    print("Zone bénéficiaire de l'utilisateur dans accueil")
+    zone = get_zone_benef(actual_token)  # Utiliser le token réel
+    
+    # Récupération des bannières
+    response = list(client.APK_ARCHIVE.Banner.find({
+        "$or": [
+            {"international": True},
+            {"eligible_countrie": zone}
+        ]
+    }))
+    # if not response:
+    #     response = list(client.APK_ARCHIVE.Banner.find({"eligible_countrie": 'CG'}))
+    #     if not response:
+    #         return jsonify({'error': 'Bannières non trouvées.'}), 404
+    
+    response = [
+        {
+            'image': banniere.get('image', ''),
+            'serviceName': banniere.get('serviceName'),
+        }
+        for banniere in response
+    ]
+    
+    # Récupération des secteurs d'activité
+    response_1 = list(client.APK_ARCHIVE.SecteurActivite.find({"eligible_countrie": zone}))
+    
+    if len(response_1) == 0:
+        sectordias = list(client.APK_ARCHIVE.SecteurActivite.find({"eligible_countrie": "diaspora"}))
+        response_1.extend(sectordias)  # ✅ Fix ici
+    
+    for secteur in response_1:
+        secteur['_id'] = str(secteur['_id'])
+    
+    # Tri par ordre de rang
+    response_1.sort(key=lambda x: int(x['rang']))
+    
+    return jsonify({
+        'banner': response,
+        'SecteurActivite': response_1
+    }), 200

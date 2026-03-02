@@ -431,10 +431,12 @@ class FormField {
 // Modèle pour les bannières
 class Accueil {
   final String imageUrl;
+  final String? serviceName;
   String? localImagePath;
 
   Accueil({
     required this.imageUrl,
+    this.serviceName,
     this.localImagePath,
   });
 
@@ -448,27 +450,31 @@ class Accueil {
   factory Accueil.fromJson(Map<String, dynamic> json) {
     return Accueil(
       imageUrl: json['image'] ?? '',
+      serviceName: json['serviceName'] as String?,
     );
   }
 
   Map<String, dynamic> toJson() => {
         'image': imageUrl,
+        'serviceName': serviceName,
       };
 
   // Méthode copyWith pour créer une copie modifiée
   Accueil copyWith({
     String? imageUrl,
+    String? serviceName,
     String? localImagePath,
   }) {
     return Accueil(
       imageUrl: imageUrl ?? this.imageUrl,
+      serviceName: serviceName ?? this.serviceName,
       localImagePath: localImagePath ?? this.localImagePath,
     );
   }
 
   @override
   String toString() =>
-      'Accueil(imageUrl: $imageUrl, localImagePath: $localImagePath)';
+      'Accueil(imageUrl: $imageUrl, serviceName: $serviceName, localImagePath: $localImagePath)';
 }
 
 // Modèle pour les secteurs d'activité

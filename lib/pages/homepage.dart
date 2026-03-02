@@ -1227,6 +1227,42 @@ class _HomePageState extends State<HomePage>
     );
   }
 
+  Future<void> _navigateToBannerService(String serviceName) async {
+    final appDataProvider = Provider.of<AppDataProvider>(context, listen: false);
+    final service = appDataProvider.services.firstWhere(
+      (s) => s['name'] == serviceName,
+      orElse: () => {'Type_Service': '', 'link_view': ''},
+    );
+
+    final String typeService = (service['Type_Service'] ?? '').toString().trim().toLowerCase();
+
+    if (!mounted) return;
+
+    if (typeService == 'webview') {
+      Navigator.push(context, MaterialPageRoute(
+        builder: (context) => ServiceWebView(url: service['link_view'] ?? ''),
+      ));
+    } else if (typeService == 'catalog') {
+      await SessionManager.checkSessionAndNavigate(
+        context: context,
+        authenticatedRoute: ServicePageTransition(page: CatalogService(serviceName: serviceName)),
+        unauthenticatedRoute: const AuthentificationPage(),
+      );
+    } else if (typeService == 'reservationservice') {
+      await SessionManager.checkSessionAndNavigate(
+        context: context,
+        authenticatedRoute: ServicePageTransition(page: ReservationService(serviceName: serviceName)),
+        unauthenticatedRoute: const AuthentificationPage(),
+      );
+    } else {
+      await SessionManager.checkSessionAndNavigate(
+        context: context,
+        authenticatedRoute: ServicePageTransition(page: FormService(serviceName: serviceName)),
+        unauthenticatedRoute: const AuthentificationPage(),
+      );
+    }
+  }
+
   void _preloadSpecificBannerImage(Accueil banner) {
     if (banner.hasLocalImage || _preloadedImageUrls.contains(banner.imageUrl)) {
       return; // Déjà préchargée ou image locale
@@ -1374,7 +1410,11 @@ class _HomePageState extends State<HomePage>
                       banner.hasLocalImage ||
                       _preloadedImageUrls.contains(banner.imageUrl);
 
-                  return ClipRRect(
+                  return GestureDetector(
+                    onTap: banner.serviceName != null && banner.serviceName!.trim().isNotEmpty
+                        ? () => _navigateToBannerService(banner.serviceName!.trim())
+                        : null,
+                    child: ClipRRect(
                     borderRadius: BorderRadius.circular(20),
                     child: Stack(
                       fit: StackFit.expand,
@@ -1399,6 +1439,14 @@ class _HomePageState extends State<HomePage>
                                 banner.imageUrl,
                                 isPreloaded,
                               ),
+
+                        // Icône tap pulsante (bannières cliquables uniquement)
+                        if (banner.serviceName != null && banner.serviceName!.trim().isNotEmpty)
+                          const Positioned(
+                            top: 10,
+                            right: 10,
+                            child: _PulsingTapIcon(),
+                          ),
 
                         // Indicateurs de pages en bas
                         Positioned(
@@ -1427,7 +1475,7 @@ class _HomePageState extends State<HomePage>
                         ),
                       ],
                     ),
-                  );
+                  ));
                 },
               ),
             ),
@@ -4376,5 +4424,72 @@ class _HomePageState extends State<HomePage>
         node.dispose();
       }
     }
+  }
+}
+
+class _PulsingTapIcon extends StatefulWidget {
+  const _PulsingTapIcon();
+
+  @override
+  State<_PulsingTapIcon> createState() => _PulsingTapIconState();
+}
+
+class _PulsingTapIconState extends State<_PulsingTapIcon>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _opacity;
+  late Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    )..repeat(reverse: true);
+    _opacity = Tween<double>(begin: 0.5, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+    _scale = Tween<double>(begin: 0.85, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (_, __) => Opacity(
+        opacity: _opacity.value,
+        child: Transform.scale(
+          scale: _scale.value,
+          child: Container(
+            padding: const EdgeInsets.all(7),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.88),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.18),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.touch_app_rounded,
+              color: Color(0xFF006699),
+              size: 18,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

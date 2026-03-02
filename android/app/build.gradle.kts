@@ -60,8 +60,8 @@ android {
         isCoreLibraryDesugaringEnabled = true
     }
 
-    kotlin {
-        jvmToolchain(17)
+    kotlinOptions {
+        jvmTarget = "17"
     }
 }
 

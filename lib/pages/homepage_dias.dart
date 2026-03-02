@@ -2413,6 +2413,42 @@ class _HomePageDiasState extends State<HomePageDias>
     );
   }
 
+  Future<void> _navigateToBannerService(String serviceName) async {
+    final appDataProvider = Provider.of<AppDataProvider>(context, listen: false);
+    final service = appDataProvider.services.firstWhere(
+      (s) => s['name'] == serviceName,
+      orElse: () => {'Type_Service': '', 'link_view': ''},
+    );
+
+    final String typeService = (service['Type_Service'] ?? '').toString().trim().toLowerCase();
+
+    if (!mounted) return;
+
+    if (typeService == 'webview') {
+      Navigator.push(context, MaterialPageRoute(
+        builder: (context) => ServiceWebView(url: service['link_view'] ?? ''),
+      ));
+    } else if (typeService == 'catalog') {
+      await SessionManager.checkSessionAndNavigate(
+        context: context,
+        authenticatedRoute: ServicePageTransitionDias(page: CatalogService(serviceName: serviceName)),
+        unauthenticatedRoute: const AuthentificationPage(),
+      );
+    } else if (typeService == 'reservationservice') {
+      await SessionManager.checkSessionAndNavigate(
+        context: context,
+        authenticatedRoute: ServicePageTransitionDias(page: ReservationService(serviceName: serviceName)),
+        unauthenticatedRoute: const AuthentificationPage(),
+      );
+    } else {
+      await SessionManager.checkSessionAndNavigate(
+        context: context,
+        authenticatedRoute: ServicePageTransitionDias(page: FormService(serviceName: serviceName)),
+        unauthenticatedRoute: const AuthentificationPage(),
+      );
+    }
+  }
+
   Widget _buildBannerSlider(AppDataProvider appDataProvider) {
     if (appDataProvider.banners.isEmpty) {
       return _buildEmptyBannerSlider();
@@ -2446,7 +2482,11 @@ class _HomePageDiasState extends State<HomePageDias>
                 },
                 itemBuilder: (context, index) {
                   final banner = appDataProvider.banners[index];
-                  return ClipRRect(
+                  return GestureDetector(
+                    onTap: banner.serviceName != null && banner.serviceName!.trim().isNotEmpty
+                        ? () => _navigateToBannerService(banner.serviceName!.trim())
+                        : null,
+                    child: ClipRRect(
                     borderRadius: BorderRadius.circular(20),
                     child: Stack(
                       fit: StackFit.expand,
@@ -2491,7 +2531,7 @@ class _HomePageDiasState extends State<HomePageDias>
                         ),
                       ],
                     ),
-                  );
+                  ));
                 },
               ),
             ),
