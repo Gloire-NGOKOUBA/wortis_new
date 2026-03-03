@@ -948,6 +948,23 @@ class _HomePageState extends State<HomePage>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              if (appDataProvider.displayedServices.any((s) => s is Map && s['a_la_une'] == true))
+                const Row(
+                  children: [
+                    Icon(Icons.star_rounded, color: Color(0xFFFFB800), size: 16),
+                    SizedBox(width: 6),
+                    Text(
+                      'À la une',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        color: Color(0xFF333333),
+                      ),
+                    ),
+                  ],
+                )
+              else
+                const SizedBox.shrink(),
               TextButton.icon(
                 onPressed: () => _onServicesPressed(context),
                 label: const Text('Voir',
@@ -4080,7 +4097,7 @@ class _HomePageState extends State<HomePage>
                           '${NumberFormat("#,###", "fr_FR").format(provider.miles).replaceAll(',', ' ')} Miles',
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 18,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
                         ),

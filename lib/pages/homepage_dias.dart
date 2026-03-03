@@ -822,7 +822,7 @@ class _HomePageDiasState extends State<HomePageDias>
             return true;
           },
           child: Scaffold(
-            appBar: _buildAnimatedAppBar(),
+            appBar: _buildAnimatedAppBar(appDataProvider),
             body: SizedBox(
               width: double.infinity,
               height: double.infinity,
@@ -974,6 +974,23 @@ class _HomePageDiasState extends State<HomePageDias>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              if (appDataProvider.displayedServices.any((s) => s is Map && s['a_la_une'] == true))
+                const Row(
+                  children: [
+                    Icon(Icons.star_rounded, color: Color(0xFFFFB800), size: 16),
+                    SizedBox(width: 6),
+                    Text(
+                      'À la une',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        color: Color(0xFF333333),
+                      ),
+                    ),
+                  ],
+                )
+              else
+                const SizedBox.shrink(),
               TextButton.icon(
                 onPressed: () => _onServicesPressed(context),
                 label: const Text('Voir',
@@ -1354,9 +1371,9 @@ class _HomePageDiasState extends State<HomePageDias>
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 60,
-                height: 60,
-                padding: const EdgeInsets.all(12),
+                width: 56,
+                height: 56,
+                padding: const EdgeInsets.all(11),
                 decoration: BoxDecoration(
                   color: isActive
                       ? AppConfig.primaryColor.withOpacity(0.1)
@@ -1635,7 +1652,7 @@ class _HomePageDiasState extends State<HomePageDias>
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -1644,61 +1661,59 @@ class _HomePageDiasState extends State<HomePageDias>
                   children: [
                     const Text(
                       'Mon solde',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
-                      ),
+                      style: TextStyle(color: Colors.white70, fontSize: 14),
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.refresh, color: Colors.white70),
-                      onPressed: () => provider.refreshMiles(),
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: provider.milesLoading
+                          ? null
+                          : () => provider.refreshMiles(),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Icon(
+                          provider.milesLoading
+                              ? Icons.hourglass_empty
+                              : Icons.refresh,
+                          color: Colors.white70,
+                          size: 20,
+                        ),
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 500),
-                  switchInCurve: Curves.easeInOut,
-                  transitionBuilder:
-                      (Widget child, Animation<double> animation) {
-                    return FadeTransition(
-                      opacity: animation,
-                      child: SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(0, 0.5),
-                          end: Offset.zero,
-                        ).animate(animation),
-                        child: child,
-                      ),
-                    );
-                  },
-                  child: provider.milesLoading
-                      ? Container(
-                          key: const ValueKey('loading'),
-                          height: 24,
-                          alignment: Alignment.centerLeft,
-                          child: const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
+                Stack(
+                  alignment: Alignment.centerLeft,
+                  children: [
+                    if (!provider.milesLoading) ...[
+                      if (provider.milesError != null)
+                        Text(
+                          'Erreur de chargement',
+                          style: TextStyle(
+                            color: Colors.red.shade300,
+                            fontSize: 14,
                           ),
                         )
-                      : Container(
-                          key: ValueKey<int>(provider.miles),
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            '${NumberFormat("#,###", "fr_FR").format(provider.miles).replaceAll(',', ' ')} Miles',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
+                      else
+                        Text(
+                          '${NumberFormat("#,###", "fr_FR").format(provider.miles).replaceAll(',', ' ')} Miles',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
+                    ],
+                    if (provider.milesLoading)
+                      const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      ),
+                  ],
                 ),
               ],
             ),
@@ -1962,7 +1977,7 @@ class _HomePageDiasState extends State<HomePageDias>
               double screenWidth = MediaQuery.of(context).size.width;
               double spacing = screenWidth > 600 ? 16 : 8;
               double padding = screenWidth > 600 ? 16 : 8;
-              double iconSize = screenWidth > 600 ? 30 : 24;
+              double iconSize = screenWidth > 600 ? 28 : 20;
               double fontSize = screenWidth > 600 ? 12 : 10;
 
               return GridView.builder(
@@ -1971,7 +1986,7 @@ class _HomePageDiasState extends State<HomePageDias>
                 padding: EdgeInsets.all(padding),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 4,
-                  childAspectRatio: 0.85,
+                  childAspectRatio: 1.0,
                   crossAxisSpacing: spacing,
                   mainAxisSpacing: spacing,
                 ),
@@ -2120,7 +2135,7 @@ class _HomePageDiasState extends State<HomePageDias>
   }
 
   // Méthodes simplifiées pour AppBar, Navigation, etc. (identiques aux versions précédentes)
-  PreferredSizeWidget _buildAnimatedAppBar() {
+  PreferredSizeWidget _buildAnimatedAppBar(AppDataProvider appDataProvider) {
     return PreferredSize(
       preferredSize: const Size.fromHeight(53),
       child: AnimatedBuilder(
@@ -2128,14 +2143,14 @@ class _HomePageDiasState extends State<HomePageDias>
         builder: (context, child) {
           return Transform.translate(
             offset: Offset(0, -53 * (1 - _bannerAnimationController.value)),
-            child: _buildAppBar(),
+            child: _buildAppBar(appDataProvider),
           );
         },
       ),
     );
   }
 
-  PreferredSizeWidget _buildAppBar() {
+  PreferredSizeWidget _buildAppBar(AppDataProvider appDataProvider) {
     return AppBar(
       toolbarHeight: 53,
       backgroundColor: AppConfig.primaryColor,
@@ -2184,7 +2199,7 @@ class _HomePageDiasState extends State<HomePageDias>
                 child: AnimatedOpacity(
                   duration: const Duration(milliseconds: 800),
                   opacity: _isSearching ? 1.0 : 0.0,
-                  child: _buildSearchField(),
+                  child: _buildSearchField(appDataProvider),
                 ),
               ),
             ),
@@ -2323,89 +2338,59 @@ class _HomePageDiasState extends State<HomePageDias>
         : [];
   }
 
-  Widget _buildSearchField() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+  Widget _buildSearchField(AppDataProvider appDataProvider) {
+    return TextField(
+      controller: _searchController,
+      style: const TextStyle(color: Colors.black),
+      decoration: InputDecoration(
+        hintText: 'Rechercher un service...',
+        hintStyle: const TextStyle(color: Colors.grey),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide.none,
+        ),
+        prefixIcon: const Icon(Icons.search, color: Color(0xFF006699)),
+        suffixIcon: _searchController.text.isNotEmpty
+            ? IconButton(
+                icon: const Icon(Icons.clear, color: Color(0xFF006699)),
+                onPressed: () {
+                  _searchController.clear();
+                  setState(() {
+                    _filteredServices.clear();
+                  });
+                },
+              )
+            : null,
       ),
-      child: TextFormField(
-        controller: _searchController,
-        style: const TextStyle(
-          color: Colors.black87,
-          fontSize: 16,
-        ),
-        decoration: InputDecoration(
-          hintText: 'Rechercher un service...',
-          hintStyle: TextStyle(
-            color: Colors.grey[500],
-            fontSize: 16,
-          ),
-          prefixIcon: Icon(
-            Icons.search,
-            color: Colors.grey[600],
-            size: 24,
-          ),
-          suffixIcon: _searchController.text.isNotEmpty
-              ? IconButton(
-                  icon: Icon(
-                    Icons.close,
-                    color: Colors.grey[600],
-                    size: 20,
-                  ),
-                  onPressed: () {
-                    _searchController.clear();
-                    setState(() {
-                      _filteredServices.clear();
-                    });
-                  },
-                )
-              : null,
-          border: InputBorder.none,
-          enabledBorder: InputBorder.none,
-          focusedBorder: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 16,
-          ),
-        ),
-        onChanged: (value) {
-          setState(() {
-            if (value.isEmpty) {
-              _filteredServices.clear();
-              _searchResultsController.reverse();
+      onChanged: (value) {
+        setState(() {
+          if (value.isEmpty) {
+            _filteredServices.clear();
+            _searchResultsController.reverse();
+          } else {
+            if (value.length == 1) {
+              _filteredServices = appDataProvider.services
+                  .map((service) => service as Map<String, dynamic>)
+                  .where((service) => service['status'] ?? true)
+                  .toList();
+              _searchResultsController.forward();
             } else {
-              final appDataProvider =
-                  Provider.of<AppDataProvider>(context, listen: false);
-              if (value.length == 1) {
-                // Afficher tous les services au premier caractère
-                _filteredServices = appDataProvider.services
-                    .map((service) => service as Map<String, dynamic>)
-                    .where((service) => service['status'] ?? true)
-                    .toList();
-                _searchResultsController.forward();
-              } else {
-                // Filtrer par nom de service
-                _filteredServices = appDataProvider.services
-                    .map((service) => service as Map<String, dynamic>)
-                    .where((service) {
-                  final serviceName = service['name'].toString().toLowerCase();
-                  final isActive = service['status'] ?? true;
-                  return serviceName.contains(value.toLowerCase()) && isActive;
-                }).toList();
-              }
+              _filteredServices = appDataProvider.services
+                  .map((service) => service as Map<String, dynamic>)
+                  .where((service) {
+                    final serviceName =
+                        service['name'].toString().toLowerCase();
+                    final isActive = service['status'] ?? true;
+                    return serviceName.contains(value.toLowerCase()) && isActive;
+                  })
+                  .toList();
             }
-          });
-        },
-      ),
+          }
+        });
+      },
     );
   }
 
@@ -2594,104 +2579,155 @@ class _HomePageDiasState extends State<HomePageDias>
   }
 
   Widget _buildAnimatedSearchOverlay() {
-    return ScaleTransition(
-      scale: _searchResultsScale,
-      child: FadeTransition(
-        opacity: _searchResultsOpacity,
-        child: Stack(
-          children: [
-            BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-              child: Container(
-                color: Colors.black.withOpacity(0.2),
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isSmallScreen = constraints.maxWidth < 360;
+        final isMediumScreen = constraints.maxWidth < 480;
+
+        final padding = isSmallScreen ? 12.0 : 16.0;
+        final fontSize = isSmallScreen ? 18.0 : (isMediumScreen ? 20.0 : 24.0);
+        final iconSize = isSmallScreen ? 20.0 : 24.0;
+        final gridSpacing = isSmallScreen ? 8.0 : (isMediumScreen ? 12.0 : 16.0);
+        final topPadding = isSmallScreen ? 12.0 : 16.0;
+
+        int crossAxisCount;
+        if (constraints.maxWidth < 300) {
+          crossAxisCount = 1;
+        } else if (constraints.maxWidth < 400) {
+          crossAxisCount = 2;
+        } else if (constraints.maxWidth < 600) {
+          crossAxisCount = 3;
+        } else {
+          crossAxisCount = 4;
+        }
+
+        return ScaleTransition(
+          scale: _searchResultsScale,
+          child: FadeTransition(
+            opacity: _searchResultsOpacity,
+            child: Stack(
+              children: [
+                BackdropFilter(
+                  filter: ImageFilter.blur(
+                    sigmaX: isSmallScreen ? 3 : 5,
+                    sigmaY: isSmallScreen ? 3 : 5,
+                  ),
+                  child: Container(color: Colors.black.withOpacity(0.2)),
+                ),
+                Container(
+                  padding: EdgeInsets.all(padding),
+                  child: Column(
                     children: [
-                      const Text(
-                        'Résultats de la recherche',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              'Résultats de la recherche',
+                              style: TextStyle(
+                                fontSize: fontSize,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(
+                              Icons.close,
+                              color: Colors.white,
+                              size: iconSize,
+                            ),
+                            padding: EdgeInsets.all(padding / 2),
+                            constraints: BoxConstraints(
+                              minWidth: iconSize * 1.5,
+                              minHeight: iconSize * 1.5,
+                            ),
+                            onPressed: () {
+                              _searchResultsController.reverse().then((_) {
+                                setState(() {
+                                  _isSearching = false;
+                                  _searchController.clear();
+                                  _filteredServices.clear();
+                                });
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: padding),
+                      if (_filteredServices.isEmpty)
+                        Expanded(
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.search_off,
+                                  size: iconSize * 2,
+                                  color: Colors.white70,
+                                ),
+                                SizedBox(height: padding),
+                                Text(
+                                  'Aucun résultat trouvé',
+                                  style: TextStyle(
+                                    fontSize: fontSize * 0.8,
+                                    color: Colors.white70,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      else
+                        Expanded(
+                          child: GridView.builder(
+                            padding: EdgeInsets.only(top: topPadding),
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: crossAxisCount,
+                              crossAxisSpacing: gridSpacing,
+                              mainAxisSpacing: gridSpacing,
+                              childAspectRatio: isSmallScreen ? 0.75 : 0.85,
+                            ),
+                            itemCount: _filteredServices.length,
+                            itemBuilder: (context, index) {
+                              final service = _filteredServices[index];
+                              return _buildResponsiveServiceGridItem(
+                                service,
+                                isSmallScreen,
+                                isMediumScreen,
+                                constraints.maxWidth,
+                              );
+                            },
+                          ),
                         ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close, color: Colors.white),
-                        onPressed: () {
-                          _searchResultsController.reverse().then((_) {
-                            setState(() {
-                              _isSearching = false;
-                              _searchController.clear();
-                              _filteredServices.clear();
-                            });
-                          });
-                        },
-                      ),
                     ],
                   ),
-                  const SizedBox(height: 16),
-                  if (_filteredServices.isEmpty)
-                    const Expanded(
-                      child: Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.search_off,
-                              size: 48,
-                              color: Colors.white70,
-                            ),
-                            SizedBox(height: 16),
-                            Text(
-                              'Aucun résultat trouvé',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.white70,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  else
-                    Expanded(
-                      child: GridView.builder(
-                        padding: const EdgeInsets.only(top: 16),
-                        gridDelegate:
-                            const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                          childAspectRatio: 0.85,
-                        ),
-                        itemCount: _filteredServices.length,
-                        itemBuilder: (context, index) {
-                          final service = _filteredServices[index];
-                          return _buildSearchResultItem(service);
-                        },
-                      ),
-                    ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildSearchResultItem(Map<String, dynamic> service) {
+  Widget _buildResponsiveServiceGridItem(
+    Map<String, dynamic> service,
+    bool isSmallScreen,
+    bool isMediumScreen,
+    double screenWidth,
+  ) {
+    final iconSize =
+        screenWidth * (isSmallScreen ? 0.06 : (isMediumScreen ? 0.05 : 0.04));
+    final fontSize = isSmallScreen ? 11.0 : (isMediumScreen ? 13.0 : 15.0);
+    final padding = isSmallScreen ? 8.0 : 12.0;
+
     return Card(
-      elevation: 4,
+      elevation: isSmallScreen ? 2 : 4,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(isSmallScreen ? 12 : 16),
       ),
       child: InkWell(
         onTap: () async {
@@ -2706,74 +2742,64 @@ class _HomePageDiasState extends State<HomePageDias>
           if (!mounted) return;
 
           if (service['Type_Service'] == "WebView") {
-            if (mounted && context.mounted) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ServiceWebView(
-                    url: service['link_view'] ?? '',
-                  ),
-                ),
-              );
-            }
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) =>
+                    ServiceWebView(url: service['link_view'] ?? ''),
+              ),
+            );
           } else if (service['Type_Service'] == "Catalog") {
-            if (mounted && context.mounted) {
-              await SessionManager.checkSessionAndNavigate(
-                context: context,
-                authenticatedRoute: ServicePageTransitionDias(
-                  page: CatalogService(serviceName: service['name']),
-                ),
-                unauthenticatedRoute: const AuthentificationPage(),
-              );
-            }
+            await SessionManager.checkSessionAndNavigate(
+              context: context,
+              authenticatedRoute: ServicePageTransitionDias(
+                page: CatalogService(serviceName: service['name']),
+              ),
+              unauthenticatedRoute: const AuthentificationPage(),
+            );
           } else if (service['Type_Service'] == "ReservationService") {
-            if (mounted && context.mounted) {
-              await SessionManager.checkSessionAndNavigate(
-                context: context,
-                authenticatedRoute: ServicePageTransitionDias(
-                  page: ReservationService(serviceName: service['name']),
-                ),
-                unauthenticatedRoute: const AuthentificationPage(),
-              );
-            }
+            await SessionManager.checkSessionAndNavigate(
+              context: context,
+              authenticatedRoute: ServicePageTransitionDias(
+                page: ReservationService(serviceName: service['name']),
+              ),
+              unauthenticatedRoute: const AuthentificationPage(),
+            );
           } else {
-            if (mounted && context.mounted) {
-              await SessionManager.checkSessionAndNavigate(
-                context: context,
-                authenticatedRoute: ServicePageTransitionDias(
-                  page: FormService(serviceName: service['name']),
-                ),
-                unauthenticatedRoute: const AuthentificationPage(),
-              );
-            }
+            await SessionManager.checkSessionAndNavigate(
+              context: context,
+              authenticatedRoute: ServicePageTransitionDias(
+                page: FormService(serviceName: service['name']),
+              ),
+              unauthenticatedRoute: const AuthentificationPage(),
+            );
           }
         },
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(isSmallScreen ? 12 : 16),
         child: Container(
-          padding: const EdgeInsets.all(12),
+          padding: EdgeInsets.all(padding),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: EdgeInsets.all(padding),
                 decoration: BoxDecoration(
-                  color: AppConfig.primaryColor.withOpacity(0.1),
+                  color: const Color(0xFF006699).withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: _buildServiceLogo(
-                  logoUrl: service['logo']?.toString(),
-                  iconName: service['icon'] ?? 'business_center',
-                  size: 28,
-                  iconColor: AppConfig.primaryColor,
+                child: Icon(
+                  IconUtils.getIconData(service['icon']),
+                  size: iconSize,
+                  color: const Color(0xFF006699),
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: padding / 2),
               Flexible(
                 child: Text(
-                  service['name'] ?? 'Service',
+                  service['name'],
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 13,
+                  style: TextStyle(
+                    fontSize: fontSize,
                     fontWeight: FontWeight.w500,
                   ),
                   maxLines: 2,
@@ -3487,7 +3513,7 @@ class _HomePageDiasState extends State<HomePageDias>
                     return Transform.scale(
                       scale: scale,
                       child: Container(
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(3),
                         decoration: BoxDecoration(
                           color: Colors.transparent,
                           borderRadius: BorderRadius.circular(12),
@@ -3501,7 +3527,7 @@ class _HomePageDiasState extends State<HomePageDias>
                     );
                   },
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 Text(
                   label,
                   style: const TextStyle(

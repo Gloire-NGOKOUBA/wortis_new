@@ -1967,7 +1967,6 @@ class _FormServiceState extends State<FormService> {
   Widget buildNavigationButtons() {
     if (serviceData!['steps'] == null) {
       return Container(
-        margin: const EdgeInsets.only(top: 24),
         height: 48,
         width: double.infinity,
         child: ElevatedButton(
@@ -1992,71 +1991,68 @@ class _FormServiceState extends State<FormService> {
         currentStepData['title_button'] ??
         (currentStep == 0 ? 'Vérifier' : 'Payer');
 
-    return Container(
-      margin: const EdgeInsets.only(top: 24),
-      child: Row(
-        children: [
-          if (currentStep == 1)
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: SizedBox(
-                  height: 58,
-                  child: OutlinedButton(
-                    onPressed: isLoading
-                        ? null
-                        : () {
-                            _apiService.cancelOperation();
-                            setState(() {
-                              currentStep = 0;
-                              verificationData = null;
-                              var step2Fields = serviceData!['steps'][1];
-                              if (step2Fields['api_fields'] != null) {
-                                step2Fields['api_fields'].forEach((
-                                  fieldName,
-                                  _,
-                                ) {
-                                  formValues.remove(fieldName);
-                                  controllers[fieldName]?.clear();
-                                });
-                              }
-                            });
-                          },
-                    style: FormStyles.outlinedButtonStyle,
-                    child: const Text('Retour'),
-                  ),
+    return Row(
+      children: [
+        if (currentStep == 1)
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: SizedBox(
+                height: 58,
+                child: OutlinedButton(
+                  onPressed: isLoading
+                      ? null
+                      : () {
+                          _apiService.cancelOperation();
+                          setState(() {
+                            currentStep = 0;
+                            verificationData = null;
+                            var step2Fields = serviceData!['steps'][1];
+                            if (step2Fields['api_fields'] != null) {
+                              step2Fields['api_fields'].forEach((
+                                fieldName,
+                                _,
+                              ) {
+                                formValues.remove(fieldName);
+                                controllers[fieldName]?.clear();
+                              });
+                            }
+                          });
+                        },
+                  style: FormStyles.outlinedButtonStyle,
+                  child: const Text('Retour'),
                 ),
               ),
             ),
-          Expanded(
-            child: SizedBox(
-              height: 58,
-              child: ElevatedButton(
-                onPressed: isLoading ? null : submitForm,
-                style: FormStyles.elevatedButtonStyle,
-                child: isLoading
-                    ? const SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.white,
-                          ),
-                        ),
-                      )
-                    : Text(
-                        buttonTitle,
-                        style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w600,
+          ),
+        Expanded(
+          child: SizedBox(
+            height: 58,
+            child: ElevatedButton(
+              onPressed: isLoading ? null : submitForm,
+              style: FormStyles.elevatedButtonStyle,
+              child: isLoading
+                  ? const SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Colors.white,
                         ),
                       ),
-              ),
+                    )
+                  : Text(
+                      buttonTitle,
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -2238,7 +2234,7 @@ class _FormServiceState extends State<FormService> {
             final maxHeight = constraints.maxHeight;
             final horizontalPadding = maxWidth * 0.05;
             final verticalPadding = maxHeight * 0.02;
-            final fieldSpacing = maxHeight * 0.015;
+            final fieldSpacing = maxHeight * 0.010;
 
             return isLoading
                 ? const Center(child: CircularProgressIndicator())
@@ -2288,7 +2284,6 @@ class _FormServiceState extends State<FormService> {
                               Container(
                                 width: maxWidth * 0.9,
                                 margin: EdgeInsets.only(
-                                  top: fieldSpacing * 2,
                                   bottom: fieldSpacing,
                                 ),
                                 child: buildNavigationButtons(),
