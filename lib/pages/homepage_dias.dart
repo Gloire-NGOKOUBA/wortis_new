@@ -3,7 +3,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ui';
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -533,38 +532,23 @@ class _HomePageDiasState extends State<HomePageDias>
     _startAutoScroll();
   }
 
-  // ========== AJOUT DE LA MÉTHODE _selectRandomServices COMME DANS home_page.dart ==========
   void _selectRandomServices() {
     if (!mounted) return;
 
     final appDataProvider =
         Provider.of<AppDataProvider>(context, listen: false);
 
-    // Vérifier que les services sont disponibles
-    if (appDataProvider.services.isEmpty) {
-      return;
-    }
+    if (appDataProvider.displayedServices.isEmpty) return;
 
     try {
-      final random = Random();
-      final servicesCopy = List.from(appDataProvider.services);
-      _selectedServices = [];
+      final services = appDataProvider.displayedServices
+          .whereType<Map<String, dynamic>>()
+          .where((s) => s.containsKey('name') && s.containsKey('icon'))
+          .toList()
+        ..sort((a, b) => (a['name'] as String).toLowerCase().compareTo((b['name'] as String).toLowerCase()));
 
-      while (_selectedServices.length < 4 && servicesCopy.isNotEmpty) {
-        final index = random.nextInt(servicesCopy.length);
-        final service = servicesCopy[index] as Map<String, dynamic>;
-
-        // S'assurer que le service a tous les champs nécessaires
-        if (service.containsKey('name') && service.containsKey('icon')) {
-          _selectedServices.add(service);
-        }
-
-        servicesCopy.removeAt(index);
-      }
-
-      // Forcer la mise à jour de l'UI si des services ont été trouvés
-      if (_selectedServices.isNotEmpty) {
-        setState(() {});
+      if (services.isNotEmpty) {
+        setState(() => _selectedServices = services);
       }
     } catch (e) {
       //print('❌ Erreur sélection services: $e');
@@ -1003,7 +987,6 @@ class _HomePageDiasState extends State<HomePageDias>
               final isSmallScreen = constraints.maxWidth < 360;
               final screenWidth = MediaQuery.of(context).size.width;
               final itemWidth = screenWidth / (isSmallScreen ? 4.5 : 4.2);
-              final iconSize = itemWidth * 0.25;
               final fontSize = itemWidth * 0.1;
 
               return Container(
@@ -1032,28 +1015,34 @@ class _HomePageDiasState extends State<HomePageDias>
                           ),
                         ),
                       )
-                    : SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
-                        child: Row(
-                          children: _selectedServices.map((service) {
-                            return Padding(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: isSmallScreen ? 4 : 8),
-                              child: SizedBox(
-                                width: itemWidth,
-                                child: _buildServiceCard(
-                                  iconName: service['icon'],
-                                  label: service['name'],
-                                  logo: service['logo'],
-                                  iconSize: iconSize,
-                                  cardWidth: itemWidth,
-                                  fontSize: fontSize,
-                                  status: service['status'],
-                                ),
-                              ),
-                            );
-                          }).toList(),
+                    : appDataProvider.displayedServices.any((s) => s is Map && s['a_la_une'] == true)
+                        // Mode "à la une" : grille 4 par ligne, pas de scroll
+                        ? Wrap(
+                            spacing: isSmallScreen ? 4 : 8,
+                            runSpacing: isSmallScreen ? 8 : 12,
+                            children: _selectedServices.map((service) {
+                              final gridItemWidth = (constraints.maxWidth - (isSmallScreen ? 32 : 48)) / 4;
+                              return SizedBox(
+                                width: gridItemWidth,
+                                child: _buildServiceGridItem(service),
+                              );
+                            }).toList(),
+                          )
+                        // Mode random : scroll horizontal
+                        : SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            physics: const BouncingScrollPhysics(),
+                            child: Row(
+                              children: _selectedServices.map((service) {
+                                return Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: isSmallScreen ? 4 : 8),
+                                  child: SizedBox(
+                                    width: itemWidth,
+                                    child: _buildServiceGridItem(service),
+                                  ),
+                                );
+                              }).toList(),
                         ),
                       ),
               );
@@ -1353,6 +1342,13 @@ class _HomePageDiasState extends State<HomePageDias>
                     ),
                   ]
                 : null,
+            gradient: isActive
+                ? const LinearGradient(
+                    colors: [Colors.white, Color(0xFFF8F9FA)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
+                : null,
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -1381,7 +1377,7 @@ class _HomePageDiasState extends State<HomePageDias>
                   service['name'] ?? 'Service',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 10,
                     fontWeight: FontWeight.w500,
                     color: isActive ? const Color(0xFF333333) : Colors.grey,
                   ),
@@ -1647,7 +1643,7 @@ class _HomePageDiasState extends State<HomePageDias>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
-                      'Mes Miles',
+                      'Mon solde',
                       style: TextStyle(
                         color: Colors.white70,
                         fontSize: 14,
@@ -1695,7 +1691,7 @@ class _HomePageDiasState extends State<HomePageDias>
                           key: ValueKey<int>(provider.miles),
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            '${NumberFormat("#,###", "fr_FR").format(provider.miles).replaceAll(',', ' ')} Mls',
+                            '${NumberFormat("#,###", "fr_FR").format(provider.miles).replaceAll(',', ' ')} Miles',
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 24,
@@ -2126,12 +2122,12 @@ class _HomePageDiasState extends State<HomePageDias>
   // Méthodes simplifiées pour AppBar, Navigation, etc. (identiques aux versions précédentes)
   PreferredSizeWidget _buildAnimatedAppBar() {
     return PreferredSize(
-      preferredSize: const Size.fromHeight(80),
+      preferredSize: const Size.fromHeight(53),
       child: AnimatedBuilder(
         animation: _bannerAnimationController,
         builder: (context, child) {
           return Transform.translate(
-            offset: Offset(0, -80 * (1 - _bannerAnimationController.value)),
+            offset: Offset(0, -53 * (1 - _bannerAnimationController.value)),
             child: _buildAppBar(),
           );
         },
@@ -2141,7 +2137,7 @@ class _HomePageDiasState extends State<HomePageDias>
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      toolbarHeight: 80,
+      toolbarHeight: 53,
       backgroundColor: AppConfig.primaryColor,
       title: Row(
         mainAxisAlignment: MainAxisAlignment.start,

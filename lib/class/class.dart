@@ -432,11 +432,15 @@ class FormField {
 class Accueil {
   final String imageUrl;
   final String? serviceName;
+  final int rang;
+  final bool aLaUne;
   String? localImagePath;
 
   Accueil({
     required this.imageUrl,
     this.serviceName,
+    this.rang = 999,
+    this.aLaUne = false,
     this.localImagePath,
   });
 
@@ -451,30 +455,37 @@ class Accueil {
     return Accueil(
       imageUrl: json['image'] ?? '',
       serviceName: json['serviceName'] as String?,
+      rang: json['rang'] as int? ?? 999,
+      aLaUne: json['a_la_une'] as bool? ?? false,
     );
   }
 
   Map<String, dynamic> toJson() => {
         'image': imageUrl,
         'serviceName': serviceName,
+        'rang': rang,
+        'a_la_une': aLaUne,
       };
 
-  // Méthode copyWith pour créer une copie modifiée
   Accueil copyWith({
     String? imageUrl,
     String? serviceName,
+    int? rang,
+    bool? aLaUne,
     String? localImagePath,
   }) {
     return Accueil(
       imageUrl: imageUrl ?? this.imageUrl,
       serviceName: serviceName ?? this.serviceName,
+      rang: rang ?? this.rang,
+      aLaUne: aLaUne ?? this.aLaUne,
       localImagePath: localImagePath ?? this.localImagePath,
     );
   }
 
   @override
   String toString() =>
-      'Accueil(imageUrl: $imageUrl, serviceName: $serviceName, localImagePath: $localImagePath)';
+      'Accueil(imageUrl: $imageUrl, serviceName: $serviceName, rang: $rang, aLaUne: $aLaUne)';
 }
 
 // Modèle pour les secteurs d'activité

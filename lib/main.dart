@@ -9,7 +9,7 @@ import 'package:onesignal_flutter/onesignal_flutter.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-// NOUVELLES IMPORTS FIREBASE
+// NOUVELLES IMPORTS FIREBASEc
 // import 'package:firebase_core/firebase_core.dart';
 
 import 'package:wortis/class/dataprovider.dart';

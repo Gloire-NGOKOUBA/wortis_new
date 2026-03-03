@@ -2,7 +2,6 @@
 
 import 'dart:async';
 import 'dart:convert';
-import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -277,31 +276,17 @@ class _HomePageState extends State<HomePage>
       listen: false,
     );
 
-    // Vérifier que les services sont disponibles
-    if (appDataProvider.services.isEmpty) {
-      return;
-    }
+    if (appDataProvider.displayedServices.isEmpty) return;
 
     try {
-      final random = Random();
-      final servicesCopy = List.from(appDataProvider.services);
-      _selectedServices = [];
+      final services = appDataProvider.displayedServices
+          .whereType<Map<String, dynamic>>()
+          .where((s) => s.containsKey('name') && s.containsKey('icon'))
+          .toList()
+        ..sort((a, b) => (a['name'] as String).toLowerCase().compareTo((b['name'] as String).toLowerCase()));
 
-      while (_selectedServices.length < 4 && servicesCopy.isNotEmpty) {
-        final index = random.nextInt(servicesCopy.length);
-        final service = servicesCopy[index] as Map<String, dynamic>;
-
-        // S'assurer que le service a tous les champs nécessaires
-        if (service.containsKey('name') && service.containsKey('icon')) {
-          _selectedServices.add(service);
-        }
-
-        servicesCopy.removeAt(index);
-      }
-
-      // Forcer la mise à jour de l'UI si des services ont été trouvés
-      if (_selectedServices.isNotEmpty) {
-        setState(() {});
+      if (services.isNotEmpty) {
+        setState(() => _selectedServices = services);
       }
     } catch (e) {}
   }
@@ -965,10 +950,8 @@ class _HomePageState extends State<HomePage>
             children: [
               TextButton.icon(
                 onPressed: () => _onServicesPressed(context),
-                label: const Text(
-                  'Voir',
-                  style: TextStyle(color: Color(0xFF006699)),
-                ),
+                label: const Text('Voir',
+                    style: TextStyle(color: Color(0xFF006699))),
                 icon: const Icon(Icons.add, color: Color(0xFF006699)),
               ),
             ],
@@ -1007,31 +990,37 @@ class _HomePageState extends State<HomePage>
                           ),
                         ),
                       )
-                    : SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        physics: const BouncingScrollPhysics(),
-                        child: Row(
-                          children: _selectedServices.map((service) {
-                            return Padding(
-                              padding: EdgeInsets.symmetric(
-                                horizontal: isSmallScreen ? 4 : 8,
-                              ),
-                              child: SizedBox(
-                                width: itemWidth,
-                                child: _buildServiceCard(
-                                  iconName: service['icon'],
-                                  label: service['name'],
-                                  logo: service['logo'],
-                                  iconSize: iconSize,
-                                  cardWidth: itemWidth,
-                                  fontSize: fontSize,
-                                  status: service['status'],
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ),
+                    : appDataProvider.displayedServices.any((s) => s is Map && s['a_la_une'] == true)
+                        // Mode "à la une" : grille 4 par ligne, pas de scroll
+                        ? Wrap(
+                            spacing: isSmallScreen ? 4 : 8,
+                            runSpacing: isSmallScreen ? 8 : 12,
+                            children: _selectedServices.map((service) {
+                              final gridItemWidth = (constraints.maxWidth - (isSmallScreen ? 32 : 48)) / 4;
+                              return SizedBox(
+                                width: gridItemWidth,
+                                child: _buildServiceGridItem(service),
+                              );
+                            }).toList(),
+                          )
+                        // Mode random : scroll horizontal
+                        : SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            physics: const BouncingScrollPhysics(),
+                            child: Row(
+                              children: _selectedServices.map((service) {
+                                return Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: isSmallScreen ? 4 : 8,
+                                  ),
+                                  child: SizedBox(
+                                    width: itemWidth,
+                                    child: _buildServiceGridItem(service),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ),
               );
             },
           ),
@@ -1949,12 +1938,12 @@ class _HomePageState extends State<HomePage>
 
   PreferredSizeWidget _buildAnimatedAppBar(AppDataProvider appDataProvider) {
     return PreferredSize(
-      preferredSize: const Size.fromHeight(80),
+      preferredSize: const Size.fromHeight(53),
       child: AnimatedBuilder(
         animation: _bannerAnimationController,
         builder: (context, child) {
           return Transform.translate(
-            offset: Offset(0, -80 * (1 - _bannerAnimationController.value)),
+            offset: Offset(0, -53 * (1 - _bannerAnimationController.value)),
             child: _buildAppBar(appDataProvider),
           );
         },
@@ -2156,7 +2145,7 @@ class _HomePageState extends State<HomePage>
                 int crossAxisCount = 4;
                 double spacing = screenWidth > 600 ? 16 : 8;
                 double padding = screenWidth > 600 ? 16 : 8;
-                double iconSize = screenWidth > 600 ? 30 : 24;
+                double iconSize = screenWidth > 600 ? 28 : 20;
                 double fontSize = screenWidth > 600 ? 12 : 10;
 
                 return GridView.builder(
@@ -2165,7 +2154,7 @@ class _HomePageState extends State<HomePage>
                   padding: EdgeInsets.all(padding),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: crossAxisCount,
-                    childAspectRatio: 0.85,
+                    childAspectRatio: 1.0,
                     crossAxisSpacing: spacing,
                     mainAxisSpacing: spacing,
                   ),
@@ -2312,7 +2301,7 @@ class _HomePageState extends State<HomePage>
     );
   }
 
-  Widget _buildServiceGridItem(Map<String, dynamic> service) {
+  Widget _buildServiceGridItem(Map<String, dynamic> service, {double iconSize = 28, double fontSize = 10}) {
     final bool isActive = service['status'] ?? true;
     final bool hasLogo =
         service['logo'] != null && service['logo'].toString().isNotEmpty;
@@ -2395,9 +2384,9 @@ class _HomePageState extends State<HomePage>
             children: [
               // Utiliser un Container avec une taille fixe pour assurer une cohérence visuelle
               Container(
-                width: 60,
-                height: 60,
-                padding: const EdgeInsets.all(12),
+                width: iconSize * 2,
+                height: iconSize * 2,
+                padding: EdgeInsets.all(iconSize * 0.4),
                 decoration: BoxDecoration(
                   color: isActive
                       ? const Color(0xFF006699).withOpacity(0.1)
@@ -2423,7 +2412,7 @@ class _HomePageState extends State<HomePage>
                                 opacity: 0.7,
                                 child: Icon(
                                   IconUtils.getIconData(service['icon']),
-                                  size: 28 * value, // Effet subtil de pulsation
+                                  size: iconSize * value, // Effet subtil de pulsation
                                   color: const Color(
                                     0xFF006699,
                                   ).withOpacity(value),
@@ -2440,7 +2429,7 @@ class _HomePageState extends State<HomePage>
                           // Fallback à l'icône en cas d'erreur de chargement du logo
                           return Icon(
                             IconUtils.getIconData(service['icon']),
-                            size: 28,
+                            size: iconSize,
                             color: isActive
                                 ? const Color(0xFF006699)
                                 : Colors.grey,
@@ -2449,7 +2438,7 @@ class _HomePageState extends State<HomePage>
                       )
                     : Icon(
                         IconUtils.getIconData(service['icon']),
-                        size: 28,
+                        size: iconSize,
                         color: isActive ? const Color(0xFF006699) : Colors.grey,
                       ),
               ),
@@ -2460,7 +2449,7 @@ class _HomePageState extends State<HomePage>
                   service['name'],
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: fontSize,
                     fontWeight: FontWeight.w500,
                     color: isActive ? const Color(0xFF333333) : Colors.grey,
                   ),
@@ -2536,7 +2525,7 @@ class _HomePageState extends State<HomePage>
 
   PreferredSizeWidget _buildAppBar(AppDataProvider appDataProvider) {
     return AppBar(
-      toolbarHeight: 80,
+      toolbarHeight: 53,
       backgroundColor: const Color(0xFF006699),
       title: Row(
         mainAxisAlignment: MainAxisAlignment.start,
@@ -3999,7 +3988,7 @@ class _HomePageState extends State<HomePage>
             ),
           ],
         ),
-        padding: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(6),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -4008,7 +3997,7 @@ class _HomePageState extends State<HomePage>
               size: iconSize,
               color: const Color(0xFF006699),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             Text(
               secteur.name,
               textAlign: TextAlign.center,
@@ -4044,7 +4033,7 @@ class _HomePageState extends State<HomePage>
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -4052,65 +4041,60 @@ class _HomePageState extends State<HomePage>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
-                      'Mes Mile',
+                      'Mon solde',
                       style: TextStyle(color: Colors.white70, fontSize: 14),
                     ),
-                    IconButton(
-                      icon: Icon(
-                        provider.milesLoading
-                            ? Icons.hourglass_empty
-                            : Icons.refresh,
-                        color: Colors.white70,
-                      ),
-                      onPressed: provider.milesLoading
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: provider.milesLoading
                           ? null
                           : () => provider.refreshMiles(),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Icon(
+                          provider.milesLoading
+                              ? Icons.hourglass_empty
+                              : Icons.refresh,
+                          color: Colors.white70,
+                          size: 20,
+                        ),
+                      ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 4),
-                AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 500),
-                  child: provider.milesLoading
-                      ? Container(
-                          key: const ValueKey('loading'),
-                          height: 24,
-                          alignment: Alignment.centerLeft,
-                          child: const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
-                              ),
-                            ),
+                Stack(
+                  alignment: Alignment.centerLeft,
+                  children: [
+                    if (!provider.milesLoading) ...[
+                      if (provider.milesError != null)
+                        Text(
+                          'Erreur de chargement',
+                          style: TextStyle(
+                            color: Colors.red.shade300,
+                            fontSize: 14,
                           ),
                         )
-                      : provider.milesError != null
-                      ? Container(
-                          key: const ValueKey('error'),
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            'Erreur de chargement',
-                            style: TextStyle(
-                              color: Colors.red.shade300,
-                              fontSize: 14,
-                            ),
-                          ),
-                        )
-                      : Container(
-                          key: ValueKey<int>(provider.miles),
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            '${NumberFormat("#,###", "fr_FR").format(provider.miles).replaceAll(',', ' ')} Mls',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
+                      else
+                        Text(
+                          '${NumberFormat("#,###", "fr_FR").format(provider.miles).replaceAll(',', ' ')} Miles',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
+                    ],
+                    if (provider.milesLoading)
+                      const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      ),
+                  ],
                 ),
               ],
             ),

@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 import requests
+import random
 from bson import ObjectId
 from datetime import datetime
 
@@ -436,3 +437,209 @@ def apk_get_vival_order(order_id):
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@app.route('/acceuil_apk_wpay_v2_test/<user_id>', methods=['GET'])
+def acceuil_apk_wpay_v2_test(user_id):
+    # Préparer les versions du token pour gérer l'encodage
+    token_decoded = urllib.parse.unquote(user_id)
+    token_encoded = urllib.parse.quote(user_id)
+    
+    # Vérifier d'abord si l'utilisateur existe avec l'une des variantes du token
+    user = client.APK_ARCHIVE.Users.find_one({
+        'token': {'$in': [user_id, token_decoded, token_encoded]}
+    })
+    
+    if not user:
+        return jsonify({'error': 'Utilisateur non trouvé.'}), 404
+    
+    # Utiliser le token réel trouvé dans la base de données
+    actual_token = user.get('token')
+    
+    print("Zone bénéficiaire de l'utilisateur dans accueil")
+    zone = get_zone_benef(actual_token)  # Utiliser le token réel
+    
+    # Récupération des bannières
+    response = list(client.APK_ARCHIVE.Banner.find({
+        "$or": [
+            {"international": True},
+            {"eligible_countrie": zone}
+        ]
+    }))
+    # if not response:
+    #     response = list(client.APK_ARCHIVE.Banner.find({"eligible_countrie": 'CG'}))
+    #     if not response:
+    #         return jsonify({'error': 'Bannières non trouvées.'}), 404
+    
+    response = [
+        {
+            'image': banniere.get('image', ''),
+            'serviceName': banniere.get('serviceName'),
+            'rang': banniere.get('rang'),
+            'a_la_une': banniere.get('a_la_une')
+        }
+        for banniere in response
+    ]
+    response.sort(key=lambda x: x['rang'] if x['rang'] is not None else 999)
+
+    # Récupération des secteurs d'activité
+    response_1 = list(client.APK_ARCHIVE.SecteurActivite.find({"eligible_countrie": zone}))
+    
+    if len(response_1) == 0:
+        sectordias = list(client.APK_ARCHIVE.SecteurActivite.find({"eligible_countrie": "diaspora"}))
+        response_1.extend(sectordias)  # ✅ Fix ici
+    
+    for secteur in response_1:
+        secteur['_id'] = str(secteur['_id'])
+    
+    # Tri par ordre de rang
+    response_1.sort(key=lambda x: int(x['rang']))
+    
+    return jsonify({
+        'banner': response,
+        'SecteurActivite': response_1
+    }), 200
+
+
+@app.route('/get_services_test/<user_id>', methods=['GET'])
+def get_services_all_test(user_id):
+    # Préparer les versions du token pour gérer l'encodage
+    token_decoded = urllib.parse.unquote(user_id)
+    token_encoded = urllib.parse.quote(user_id)
+    
+    # Vérifier d'abord si l'utilisateur existe avec l'une des variantes du token
+    user = client.APK_ARCHIVE.Users.find_one({
+        'token': {'$in': [user_id, token_decoded, token_encoded]}
+    })
+    
+    if not user:
+        return jsonify({'error': 'Utilisateur non trouvé.'}), 404
+    
+    # Utiliser le token réel trouvé dans la base de données
+    actual_token = user.get('token')
+    
+    # Récupération de la zone du bénéficiaire
+    zone = get_zone_benef(actual_token)
+    services = []
+
+    if zone != "CG":
+        # Pour les zones différentes de CG
+        # 1. Récupérer les services depuis l'API externe
+        url = "https://api.live.wortis.cg/famlink/api/services"
+        headers = {'Content-Type': 'application/json'}
+        
+        try:
+            response = requests.get(url, headers=headers)
+            
+            if response.status_code == 200:
+                data = response.json()
+                
+                # Récupérer la liste des services depuis l'API
+                all_services_api = data.get('services', data) if isinstance(data, dict) else data
+                
+                # Filtrer les services Internet et par zone depuis l'API
+                for service in all_services_api:
+                    # Vérifier le champ type
+                    service_types = service.get('type', [])
+                    service_countries = service.get('countries', [])
+                    
+                    # Vérifier si la liste type contient "internet"
+                    has_internet = False
+                    if isinstance(service_types, list):
+                        has_internet = any('internet' in str(t).lower() for t in service_types)
+                    elif isinstance(service_types, str):
+                        has_internet = 'internet' in service_types.lower()
+                    
+                    # Vérifier si la zone est dans les pays éligibles
+                    is_zone_eligible = zone in service_countries if isinstance(service_countries, list) else False
+                    
+                    if has_internet and is_zone_eligible:
+                        # Adapter la structure au format attendu de la base de données
+                        adapted_service = {
+                            'name': service.get('name', ''),
+                            'logo': service.get('logo_url', service.get('logo', '')),
+                            #'status': service.get('is_active', service.get('status', False)),
+                            'status': False,
+                            'SecteurActivite': service.get('SecteurActivite', 'Service Internet'),
+                            'Type_Service': service.get('Type_Service', 'Service'),
+                            'eligible_countries': zone,  # Adapter countries -> eligible_countries
+                            'description': service.get('description', ''),
+                            'icon': service.get('icon', 'network_wifi'),
+                            'rang': service.get('rang', '0')
+                        }
+                        services.append(adapted_service)
+            else:
+                return jsonify({"error": f"Erreur API: {response.status_code}"}), 500
+                
+        except Exception as e:
+            return jsonify({"error": f"Erreur API: {str(e)}"}), 500
+        
+        # 2. Récupérer aussi les services depuis client.APK_ARCHIVE
+        try:
+            # Récupérer TOUS les services pour la zone
+            services_db = list(client.APK_ARCHIVE.Service.find({"eligible_countries": zone}))
+            
+            for service in services_db:
+                service['_id'] = str(service['_id'])
+                
+                # Convertir TOUT en "Service Internet" SAUF "Autres Services, Recharge et Cartes Virtuelles"
+                if service.get('SecteurActivite') not in ['Autres Services', 'Recharge', 'Cartes Virtuelles']:
+                    service['SecteurActivite'] = 'Service Internet'
+                
+                services.append(service)
+                
+        except Exception as e:
+            return jsonify({"error": f"Erreur base de données: {str(e)}"}), 500
+    
+    else:
+        # Pour la zone CG (comportement original)
+        try:
+            services = list(
+                client.APK_ARCHIVE.Service.find({
+                    "eligible_countries": zone,
+                    "enabled": {"$ne": False}
+                })
+            )
+
+            
+            for service in services:
+                service['_id'] = str(service['_id'])
+                service['source'] = 'database'  # Marquer la source
+                
+        except Exception as e:
+            return jsonify({"error": f"Erreur base de données: {str(e)}"}), 500
+    
+    # Déduplication des services basée sur le nom et eligible_countries
+    seen_services = set()
+    unique_services = []
+    for service in services:
+        service_name = service.get('name', '').lower().strip()
+        service_country = service.get('eligible_countries', '').strip()
+        
+        # Créer une clé unique combinant nom + pays
+        service_key = f"{service_name}|{service_country}"
+        
+        if service_name and service_key not in seen_services:
+            seen_services.add(service_key)
+            unique_services.append(service)
+    
+    services = unique_services
+    
+    # Trier les services par nom
+    services.sort(key=lambda x: x.get('name', '').lower())
+
+    # Services à la une (max 8), sinon random comme avant
+    featured_services = [s for s in services if s.get('a_la_une') == True]
+    if featured_services:
+        displayed_services = featured_services[:8]
+    else:
+        displayed_services = random.sample(services, min(3, len(services)))
+
+    return jsonify({
+        "random_services": displayed_services,
+        "all_services": services,
+        "zone": zone,
+        "total_services": len(services),
+        "webview": True
+    })
+

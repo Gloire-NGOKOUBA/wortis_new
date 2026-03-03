@@ -25,6 +25,7 @@ class AppDataProvider with ChangeNotifier {
   List<Accueil> _banners = [];
   List<SecteurActivite> _secteurs = [];
   List<dynamic> _services = [];
+  List<dynamic> _displayedServices = [];
   UserData? _userData;
   Map<String, dynamic> _userProfile = {};
 
@@ -68,7 +69,7 @@ class AppDataProvider with ChangeNotifier {
   bool _milesLoading = false;
   String? _milesError;
   DateTime? _lastMilesRefresh;
-  static const milesRefreshThreshold = Duration(minutes: 10);
+  static const milesRefreshThreshold = Duration(seconds: 5);
 
   // ========== PAYS ÉLIGIBLES ==========
   List<String> _eligibleCountries = [];
@@ -97,8 +98,10 @@ class AppDataProvider with ChangeNotifier {
   bool get isInitialized => _isInitialized;
   String get error => _error;
   List<Accueil> get banners => _banners;
+  List<Accueil> get bannersALaUne => _banners.where((b) => b.aLaUne).toList();
   List<SecteurActivite> get secteurs => _secteurs;
   List<dynamic> get services => _services;
+  List<dynamic> get displayedServices => _displayedServices;
   UserData? get userData => _userData;
   List<NewsItem> get news => _news;
   bool get isUserLoggedIn => _userData != null;
@@ -456,7 +459,6 @@ class AppDataProvider with ChangeNotifier {
                 ?.map((item) => Accueil.fromJson(item))
                 .toList() ??
             [];
-        _banners.shuffle();
         _secteurs =
             (jsonData['SecteurActivite'] as List?)
                 ?.map((item) => SecteurActivite.fromJson(item))
@@ -526,6 +528,7 @@ class AppDataProvider with ChangeNotifier {
         if (response.statusCode == 200) {
           final jsonData = json.decode(response.body);
           _services = jsonData['all_services'] ?? [];
+          _displayedServices = jsonData['random_services'] ?? [];
           print('✅ [DataProvider] Services chargés: ${_services.length}');
           // Debug: afficher les Type_Service de chaque service
           for (var service in _services) {
@@ -1194,7 +1197,6 @@ class AppDataProvider with ChangeNotifier {
                 ?.map((item) => Accueil.fromJson(item))
                 .toList() ??
             [];
-        _banners.shuffle();
       }
     } catch (e) {
       print("Erreur bannières: $e");
@@ -1280,6 +1282,7 @@ class AppDataProvider with ChangeNotifier {
     if (responses[1].statusCode == 200) {
       final jsonData = json.decode(responses[1].body);
       _services = jsonData['all_services'] ?? [];
+      _displayedServices = jsonData['random_services'] ?? [];
     }
 
     if (responses[2].statusCode == 200) {
