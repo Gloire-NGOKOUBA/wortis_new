@@ -332,8 +332,9 @@ class _TransactionHistoryPageState extends State<TransactionHistoryPage>
     final isSmallScreen = MediaQuery.of(context).size.width < 600;
 
     return AppBar(
+      centerTitle: true,
       title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             'Historique',

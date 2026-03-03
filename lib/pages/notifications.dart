@@ -303,7 +303,7 @@ class _NotificationPageState extends State<NotificationPage> {
 
       CustomOverlay.hide();
 
-      if (context.mounted) {
+      if (mounted) {
         CustomOverlay.showSuccess(
           context,
           message: 'Toutes les notifications ont été supprimées',
@@ -312,7 +312,7 @@ class _NotificationPageState extends State<NotificationPage> {
     } catch (e) {
       CustomOverlay.hide();
 
-      if (context.mounted) {
+      if (mounted) {
         CustomOverlay.showError(
           context,
           message: 'Erreur lors de la suppression: ${e.toString()}',

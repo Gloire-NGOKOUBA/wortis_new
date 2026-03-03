@@ -452,11 +452,11 @@ class AppDataProvider with ChangeNotifier {
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
-        _banners =
-            (jsonData['banner'] as List?)
+        _banners = (jsonData['banner'] as List?)
                 ?.map((item) => Accueil.fromJson(item))
                 .toList() ??
             [];
+        _banners.shuffle();
         _secteurs =
             (jsonData['SecteurActivite'] as List?)
                 ?.map((item) => SecteurActivite.fromJson(item))
@@ -1190,11 +1190,11 @@ class AppDataProvider with ChangeNotifier {
       );
       if (response.statusCode == 200) {
         final jsonData = json.decode(response.body);
-        _banners =
-            (jsonData['banner'] as List?)
+        _banners = (jsonData['banner'] as List?)
                 ?.map((item) => Accueil.fromJson(item))
                 .toList() ??
             [];
+        _banners.shuffle();
       }
     } catch (e) {
       print("Erreur bannières: $e");
@@ -1265,11 +1265,11 @@ class AppDataProvider with ChangeNotifier {
   Future<void> _processResponses(List<http.Response> responses) async {
     if (responses[0].statusCode == 200) {
       final jsonData = json.decode(responses[0].body);
-      _banners =
-          (jsonData['banner'] as List?)
+      _banners = (jsonData['banner'] as List?)
               ?.map((item) => Accueil.fromJson(item))
               .toList() ??
           [];
+      _banners.shuffle();
       _secteurs =
           (jsonData['SecteurActivite'] as List?)
               ?.map((item) => SecteurActivite.fromJson(item))

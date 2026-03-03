@@ -157,7 +157,9 @@ void main() async {
     OneSignal.Debug.setLogLevel(OSLogLevel.verbose);
 
     // Désactiver les In-App Messages (popup "Open Settings")
-    OneSignal.InAppMessages.paused(true);
+    try {
+      await OneSignal.InAppMessages.paused(true);
+    } catch (_) {}
 
     OneSignal.initialize(oneSignalAppId);
 
