@@ -3,211 +3,1213 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Back Office - Réservations</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="shortcut icon" href="https://rentalcar.wortispay.cg/images/favicon.ico" type="image/x-icon">
+    <title>Wortis-APK-Admin</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
 </head>
 <body>
-    <!-- Page de Connexion -->
-    <div id="loginPage" class="login-container">
-        <div class="login-card">
-            <div class="login-header">
-                <h1>🎯 Back Office</h1>
-                <p>Gestion des Réservations</p>
-            </div>
-            <form id="loginForm" class="login-form">
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" required placeholder="votre@email.com">
-                </div>
-                <div class="form-group">
-                    <label for="password">Mot de passe</label>
-                    <input type="password" id="password" required placeholder="••••••••">
-                </div>
-                <button type="submit" class="btn btn-primary btn-block">
-                    Se connecter
-                </button>
-            </form>
-            <div id="loginError" class="error-message" style="display: none;"></div>
+   <!-- Header -->
+   <header class="header">
+    <div class="header-brand">
+        <button class="menu-toggle" id="menuToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="header-badge">
+            <img src="img/wortis_bleu.png" alt="WortistPay Logo">
         </div>
     </div>
+    <div class="header-actions">
+        <button title="Mode sombre" class="dark-mode-toggle">
+            <i class="fas fa-moon"></i>
+        </button>
+        <button title="Notifications">
+            <i class="fas fa-bell"></i>
+            <span class="notification-dot"></span>
+        </button>
+        <button title="Paramètres">
+            <i class="fas fa-cog"></i>
+        </button>
+    </div>
+   </header>
+<!-- Header -->
 
-    <!-- Dashboard Principal -->
-    <div id="dashboardPage" class="dashboard-container" style="display: none;">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <h2>📋 Menu</h2>
+    
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-category">Gestion Principale</div>
+        <a href="#" class="nav-item active" data-page="dashboard">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Tableau de bord</span>
+        </a>
+        <a href="#" class="nav-item" data-page="users">
+            <i class="fas fa-users"></i>
+            <span>Utilisateurs</span>
+        </a>
+        <a href="#" class="nav-item" data-page="wallets">
+            <i class="fas fa-wallet"></i>
+            <span>Portefeuilles</span>
+        </a>
+        <a href="#" class="nav-item" data-page="secteurs">
+            <i class="fas fa-building"></i>
+            <span>Secteurs d'Activité</span>
+        </a>
+        <a href="#" class="nav-item" data-page="services">
+            <i class="fas fa-th-large"></i>
+            <span>Services</span>
+        </a>
+        
+        <div class="sidebar-category">Marketing</div>
+        <a href="#" class="nav-item" data-page="news">
+            <i class="fas fa-newspaper"></i>
+            <span>Actualités</span>
+        </a>
+        <a href="#" class="nav-item" data-page="banners">
+            <i class="fas fa-image"></i>
+            <span>Bannières</span>
+        </a>
+        <a href="#" class="nav-item" data-page="notifications">
+            <i class="fas fa-bell"></i>
+            <span>Notifications</span>
+        </a>
+        
+        <div class="sidebar-category">Système</div>
+        <a href="#" class="nav-item" data-page="settings">
+            <i class="fas fa-cog"></i>
+            <span>Paramètres</span>
+        </a>
+        <a href="#" class="nav-item" data-page="logs">
+            <i class="fas fa-history"></i>
+            <span>Journaux d'activité</span>
+        </a>
+        
+        <div class="sidebar-profile">
+            <div class="sidebar-profile-img">A</div>
+            <div class="sidebar-profile-info">
+                <div class="sidebar-profile-name">Admin</div>
+                <div class="sidebar-profile-role">Super Administrateur</div>
             </div>
-            <nav class="sidebar-nav">
-                <a href="#" class="nav-link active" data-page="reservations">
-                    <span class="icon">📅</span>
-                    Réservations
-                </a>
-                <a href="#" class="nav-link" data-page="prestations">
-                    <span class="icon">✂️</span>
-                    Prestations
-                </a>
-                <a href="#" class="nav-link" data-page="stats">
-                    <span class="icon">📊</span>
-                    Statistiques
-                </a>
-            </nav>
-            <div class="sidebar-footer">
-                <div class="user-info">
-                    <span id="userEmail"></span>
+        </div>
+    </nav>
+
+    <!-- Main Content Dashboard -->
+    <main class="main-content animate-fade-in">
+        <!-- <div class="content-header">
+            <h2 class="content-title"><i class="fas fa-tachometer-alt"></i> Tableau de bord</h2>
+            <button class="btn btn-primary" >
+                <i class="fas fa-sync-alt"></i> Rafraîchir
+            </button>
+        </div> -->
+
+        <!-- Statistics Cards -->
+        <div class="stats-container">
+            <div class="stats-card stats-card-primary">
+                <div class="stats-icon stats-icon-primary">
+                    <i class="fas fa-users"></i>
                 </div>
-                <button class="btn btn-secondary btn-block" onclick="logout()">
-                    Déconnexion
-                </button>
+                <div class="stats-info">
+                    <div class="stats-label">Utilisateurs</div>
+                    <div class="stats-value">608</div>
+                    <div class="stats-change stats-up">
+                        <!-- <i class="fas fa-arrow-up"></i> +15% ce mois -->
+                    </div>
+                </div>
             </div>
-        </aside>
-
-        <!-- Contenu Principal -->
-        <main class="main-content">
-            <!-- Header -->
-            <header class="content-header">
-                <h1 id="pageTitle">Réservations</h1>
-                <div class="header-actions">
-                    <select id="serviceSelector" class="service-select">
-                        <option value="">Tous les services</option>
-                    </select>
+            
+            <div class="stats-card stats-card-success">
+                <div class="stats-icon stats-icon-success">
+                    <i class="fas fa-money-bill-wave"></i>
                 </div>
-            </header>
-
-            <!-- Page Réservations -->
-            <div id="reservationsPage" class="page-content">
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-value" id="totalReservations">0</div>
-                        <div class="stat-label">Total Réservations</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="confirmedReservations">0</div>
-                        <div class="stat-label">Confirmées</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="pendingReservations">0</div>
-                        <div class="stat-label">En attente</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-value" id="totalRevenue">0 FCFA</div>
-                        <div class="stat-label">Revenu Total</div>
+                <div class="stats-info">
+                    <div class="stats-label">Transactions</div>
+                    <div class="stats-value">240</div>
+                    <div class="stats-change stats-up">
+                        <!-- <i class="fas fa-arrow-up"></i> +8% ce mois -->
                     </div>
                 </div>
-
-                <div class="filters">
-                    <input type="date" id="filterDate" placeholder="Filtrer par date">
-                    <select id="filterStatus">
-                        <option value="">Tous les statuts</option>
-                        <option value="confirmed">Confirmé</option>
-                        <option value="pending_payment">En attente</option>
-                        <option value="cancelled">Annulé</option>
-                    </select>
-                    <button class="btn btn-primary" onclick="loadReservations()">Filtrer</button>
+            </div>
+            
+            <div class="stats-card stats-card-warning">
+                <div class="stats-icon stats-icon-warning">
+                    <i class="fas fa-th-large"></i>
                 </div>
+                <div class="stats-info">
+                    <div class="stats-label">Services Actifs</div>
+                    <div class="stats-value">27</div>
+                    <div class="stats-change stats-up">
+                        <!-- <i class="fas fa-arrow-up"></i> +3 ce mois -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stats-card stats-card-danger">
+                <div class="stats-icon stats-icon-danger">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="stats-info">
+                    <div class="stats-label">Notifications</div>
+                    <div class="stats-value">1524</div>
+                    <div class="stats-change stats-down">
+                        <!-- <i class="fas fa-arrow-down"></i> +5% ce mois -->
+                    </div>
+                </div>
+            </div>
+        </div>
 
+        <!-- Recent Activity & Users -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 30px;">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Activité Récente</h3>
+                    <button class="btn btn-outline btn-sm">
+                        <i class="fas fa-filter"></i> Filtrer
+                    </button>
+                </div>
+                <div class="activity-list">
+                    <div class="activity-item">
+                        <div class="activity-icon activity-icon-success">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">Nouvel utilisateur inscrit</div>
+                            <div class="activity-time">Il y a 5 minutes</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon activity-icon-primary">
+                            <i class="fas fa-money-bill"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">Nouvelle transaction</div>
+                            <div class="activity-time">Il y a 15 minutes</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon activity-icon-warning">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">Notification envoyée</div>
+                            <div class="activity-time">Il y a 40 minutes</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon activity-icon-danger">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title">Alerte système détectée</div>
+                            <div class="activity-time">Il y a 1 heure</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h3>Derniers Utilisateurs</h3>
+                    <button class="btn btn-outline btn-sm">
+                        <i class="fas fa-external-link-alt"></i> Voir Tous
+                    </button>
+                </div>
                 <div class="table-container">
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Date</th>
-                                <th>Heure</th>
-                                <th>Client</th>
-                                <th>Téléphone</th>
-                                <th>Prestation</th>
-                                <th>Montant</th>
+                                <th>Utilisateur</th>
                                 <th>Statut</th>
-                                <th>Actions</th>
+                                <th>Date</th>
                             </tr>
                         </thead>
-                        <tbody id="reservationsTable">
-                            <!-- Les réservations seront chargées ici -->
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="cell-main">Lz </div>
+                                    <div class="cell-sub">+242 04 005 05 05</div>
+                                </td>
+                                <td><span class="badge badge-success"><i class="fas fa-check"></i> Actif</span></td>
+                                <td>14/01/2025</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="cell-main">G2</div>
+                                    <div class="cell-sub">+242 06 426 29 20</div>
+                                </td>
+                                <td><span class="badge badge-success"><i class="fas fa-check"></i> Actif</span></td>
+                                <td>02/01/2025</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="cell-main">GAS-EBEBA</div>
+                                    <div class="cell-sub">+242 06 819 61 83</div>
+                                </td>
+                                <td><span class="badge badge-warning"><i class="fas fa-clock"></i> Actif</span></td>
+                                <td>02/01/2025</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="cell-main">Ruth Esther</div>
+                                    <div class="cell-sub">+242 05 111 2222</div>
+                                </td>
+                                <td><span class="badge badge-danger"><i class="fas fa-ban"></i> Inactif</span></td>
+                                <td>23/02/2025</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
+        </div>
 
-            <!-- Page Prestations -->
-            <div id="prestationsPage" class="page-content" style="display: none;">
-                <div class="page-header">
-                    <h2>Gestion des Prestations</h2>
-                    <button class="btn btn-primary" onclick="openPrestationModal()">
-                        + Ajouter une prestation
-                    </button>
-                </div>
-
-                <div class="prestations-grid" id="prestationsGrid">
-                    <!-- Les prestations seront chargées ici -->
-                </div>
-            </div>
-
-            <!-- Page Statistiques -->
-            <div id="statsPage" class="page-content" style="display: none;">
-                <h2>Statistiques détaillées</h2>
-                <div class="stats-details" id="statsDetails">
-                    <!-- Stats détaillées -->
+    </main>
+    <!-- Section Utilisateur  -->
+    <div class="page" id="users-page" style="display: none;">
+        <div class="content-header">
+            <h2 class="content-title">Gestion des Utilisateurs</h2>
+            <button class="btn btn-primary" id="addUserBtn">
+                <i class="fas fa-plus"></i> Ajouter un utilisateur
+            </button>
+        </div>
+        <div class="card">
+            <div class="card-header">
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" placeholder="Rechercher un utilisateur...">
                 </div>
             </div>
-        </main>
-    </div>
-
-    <!-- Modal Détails Réservation -->
-    <div id="reservationModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Détails de la réservation</h2>
-                <span class="close" onclick="closeModal('reservationModal')">&times;</span>
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Téléphone</th>
+                            <th>Date de création</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <!-- Table content will be dynamically populated -->
+                    </tbody>
+                </table>
             </div>
-            <div class="modal-body" id="reservationDetails">
-                <!-- Détails de la réservation -->
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal('reservationModal')">Fermer</button>
+            <!-- Pagination -->
+            <div class="pagination-container">
+                <div class="pagination-info">
+                    Affichage de <span id="startItem">1</span> à <span id="endItem">10</span> sur <span id="totalItems">0</span> utilisateurs
+                </div>
+                <ul class="pagination" id="pagination">
+                    <!-- Pagination sera générée dynamiquement -->
+                </ul>
             </div>
         </div>
     </div>
+        <!-- Section Utilisateur  -->
 
-    <!-- Modal Prestation -->
-    <div id="prestationModal" class="modal">
-        <div class="modal-content">
+
+    <!-- Page Secteurs d'Activité (nouvelle) -->
+    <div class="page" id="secteurs-page" style="display: none;">
+        <div class="content-header">
+            <h2 class="content-title">Gestion des Secteurs d'Activité</h2>
+            <button class="btn btn-primary" id="addSecteurBtn">
+                <i class="fas fa-plus"></i> Ajouter un secteur
+            </button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" id="searchSecteur" placeholder="Rechercher un secteur...">
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Icône</th>
+                            <th>Rang</th>
+                            <th>Nombre de services</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="secteursTableBody">
+                        <!-- Table content will be dynamically populated -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="pagination-container">
+                <div class="pagination-info">
+                    Affichage de <span id="startItemSecteur">1</span> à <span id="endItemSecteur">10</span> sur <span id="totalItemsSecteur">0</span> secteurs
+                </div>
+                <ul class="pagination" id="paginationSecteur">
+                    <!-- Pagination sera générée dynamiquement -->
+                </ul>
+            </div>
+        </div>
+    </div>
+         <!-- Page Services (nouvelle) -->
+
+    <div class="page" id="services-page" style="display: none;">
+        <div class="content-header">
+            <h2 class="content-title">Gestion des Services</h2>
+            <button class="btn btn-primary" id="addServiceBtn">
+                <i class="fas fa-plus"></i> Ajouter un service
+            </button>
+        </div>
+    
+        <div class="card">
+            <div class="card-header">
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" id="searchService" placeholder="Rechercher un service...">
+                </div>
+            </div>
+    
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Type de Service</th>
+                            <th>Secteur d'Activité</th>
+                            <th>Rang</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="servicesTableBody">
+                        <!-- Table content will be dynamically populated -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="pagination-container">
+                <div class="pagination-info">
+                    Affichage de <span id="startItemService">1</span> à <span id="endItemService">10</span> sur <span id="totalItemsService">0</span> services
+                </div>
+                <ul class="pagination" id="paginationService">
+                    <!-- Pagination sera générée dynamiquement -->
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- Page Services (nouvelle) -->
+
+
+    <!-- Modal pour Ajouter/Éditer un Service -->
+    <div class="modal-overlay" id="serviceModal">
+        <div class="modal">
             <div class="modal-header">
-                <h2 id="prestationModalTitle">Ajouter une prestation</h2>
-                <span class="close" onclick="closeModal('prestationModal')">&times;</span>
+                <h3 class="modal-title" id="serviceModalTitle">Ajouter un service</h3>
+                <button class="modal-close" onclick="closeModal('serviceModal')">&times;</button>
             </div>
             <div class="modal-body">
-                <form id="prestationForm">
-                    <input type="hidden" id="prestationId">
+                <form id="serviceForm">
+                    <input type="hidden" name="serviceId" id="serviceId">
                     <div class="form-group">
-                        <label for="prestationName">Nom de la prestation</label>
-                        <input type="text" id="prestationName" required>
+                        <label class="form-label">Nom du service</label>
+                        <input type="text" class="form-input" name="name" id="serviceName" required>
                     </div>
                     <div class="form-group">
-                        <label for="prestationDescription">Description</label>
-                        <textarea id="prestationDescription" rows="3"></textarea>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="prestationPrice">Prix (FCFA)</label>
-                            <input type="number" id="prestationPrice" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="prestationCategory">Catégorie</label>
-                            <input type="text" id="prestationCategory">
-                        </div>
+                        <label class="form-label">Type de service</label>
+                        <select class="form-input" name="typeService" id="serviceType" required>
+                            <option value="PaiementImmediat">Paiement Immédiat</option>
+                            <option value="PaiementSurDevis">Paiement Sur Devis</option>
+                            <option value="WebView">Web View</option>
+                            <option value="ReservationService">Réservation Service</option>
+                            <option value="PaiementPelissa">Paiement Pelissa</option>
+                        </select>
                     </div>
                     <div class="form-group">
-                        <label for="prestationImage">URL Image</label>
-                        <input type="url" id="prestationImage">
+                        <label class="form-label">Secteur d'activité</label>
+                        <select class="form-input" name="secteurActivite" id="serviceSecteur" required>
+                            <!-- Options seront ajoutées dynamiquement -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Rang (ordre d'affichage)</label>
+                        <input type="number" class="form-input" name="rang" id="serviceRang" min="1" value="1">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Statut</label>
+                        <select class="form-input" name="status" id="serviceStatus">
+                            <option value="true">Actif</option>
+                            <option value="false">Inactif</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Icône (nom FontAwesome)</label>
+                        <input type="text" class="form-input" name="icon" id="serviceIcon" placeholder="Exemple: credit_card">
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal('prestationModal')">Annuler</button>
-                <button class="btn btn-primary" onclick="savePrestation()">Enregistrer</button>
+                <button class="btn btn-outline" onclick="closeModal('serviceModal')">Annuler</button>
+                <button class="btn btn-primary" id="saveServiceBtn">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+    <!-- ══════════════════════════════════════════
+         SECTION ACTUALITÉS (NEWS)
+    ══════════════════════════════════════════ -->
+    <div class="page" id="news-page" style="display: none;">
+        <div class="content-header">
+            <h2 class="content-title"><i class="fas fa-newspaper"></i> Gestion des Actualités</h2>
+            <button class="btn btn-primary" id="addNewsBtn">
+                <i class="fas fa-plus"></i> Ajouter une actualité
+            </button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" id="searchNews" placeholder="Rechercher une actualité...">
+                </div>
+                <div class="filter-container">
+                    <select class="form-input" id="filterNewsCategorie">
+                        <option value="">Toutes les catégories</option>
+                        <option value="general">Général</option>
+                        <option value="promo">Promotion</option>
+                        <option value="maintenance">Maintenance</option>
+                        <option value="alerte">Alerte</option>
+                        <option value="nouveaute">Nouveauté</option>
+                    </select>
+                    <select class="form-input" id="filterNewsStatut">
+                        <option value="">Tous les statuts</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Image</th>
+                            <th>Titre / Extrait</th>
+                            <th>Catégorie</th>
+                            <th>Statut</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="newsTableBody">
+                        <!-- Généré dynamiquement -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination-container">
+                <div class="pagination-info">
+                    Affichage de <span id="startItemNews">1</span> à <span id="endItemNews">10</span> sur <span id="totalItemsNews">0</span> actualités
+                </div>
+                <ul class="pagination" id="paginationNews"></ul>
             </div>
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <!-- Modal Créer / Éditer une News -->
+    <div class="modal-overlay" id="newsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="newsModalTitle">Ajouter une actualité</h3>
+                <button class="modal-close" onclick="closeModal('newsModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="newsForm">
+                    <input type="hidden" id="newsId">
+                    <div class="form-group">
+                        <label class="form-label">Titre <span style="color:var(--danger-color)">*</span></label>
+                        <input type="text" class="form-input" id="newsTitre" placeholder="Titre de l'actualité" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Contenu <span style="color:var(--danger-color)">*</span></label>
+                        <textarea class="form-input" id="newsContenu" rows="5" placeholder="Rédigez le contenu..." required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Image (optionnel)</label>
+                        <input type="file" id="newsImageFile" accept="image/*" style="display:none;">
+                        <div id="newsUploadZone" style="border:2px dashed var(--border-color);border-radius:8px;padding:20px;text-align:center;cursor:pointer;transition:border-color .2s;">
+                            <i class="fas fa-cloud-upload-alt" style="font-size:28px;color:var(--text-muted);margin-bottom:8px;display:block;"></i>
+                            <span style="color:var(--text-muted);font-size:13px;">Cliquez ou glissez une image ici</span>
+                        </div>
+                        <div id="newsUploadStatus" style="margin-top:6px;font-size:13px;"></div>
+                        <img id="newsImagePreview" src="#" alt="Aperçu" style="max-width:100%;max-height:140px;margin-top:10px;border-radius:6px;object-fit:cover;display:none;">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group form-group-half">
+                            <label class="form-label">Catégorie</label>
+                            <select class="form-input" id="newsCategorie">
+                                <option value="general">Général</option>
+                                <option value="promo">Promotion</option>
+                                <option value="maintenance">Maintenance</option>
+                                <option value="alerte">Alerte</option>
+                                <option value="nouveaute">Nouveauté</option>
+                            </select>
+                        </div>
+                        <div class="form-group form-group-half">
+                            <label class="form-label">Statut</label>
+                            <select class="form-input" id="newsStatut">
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('newsModal')">Annuler</button>
+                <button class="btn btn-primary" id="saveNewsBtn">
+                    <i class="fas fa-save"></i> Enregistrer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Confirmer suppression -->
+    <div class="modal-overlay" id="deleteNewsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-exclamation-triangle"></i> Confirmer la suppression</h3>
+                <button class="modal-close" onclick="closeModal('deleteNewsModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-20">
+                    <i class="fas fa-trash-alt" style="font-size:48px;color:var(--danger-color);margin-bottom:20px;"></i>
+                    <p>Êtes-vous sûr de vouloir supprimer l'actualité :</p>
+                    <p><strong id="deleteNewsTitle"></strong></p>
+                    <p style="color:var(--text-muted);font-size:13px;">Cette action est irréversible.</p>
+                </div>
+                <input type="hidden" id="deleteNewsId">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('deleteNewsModal')">Annuler</button>
+                <button class="btn btn-danger" id="confirmDeleteNewsBtn">
+                    <i class="fas fa-trash-alt"></i> Supprimer
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- FIN SECTION ACTUALITÉS -->
+
+    <!-- La SECTION BANNERS -->
+    <div class="page" id="banners-page" style="display: none;">
+        <div class="content-header">
+            <h2 class="content-title">Gestion des Bannières</h2>
+            <button class="btn btn-primary" id="addBannerBtn">
+                <i class="fas fa-plus"></i> Ajouter une bannière
+            </button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" id="searchBanner" placeholder="Rechercher une bannière...">
+                </div>
+            </div>
+
+            <div class="banner-grid" id="bannersContainer">
+                <!-- Les cartes de bannières seront générées ici -->
+            </div>
+            
+            <!-- Pagination -->
+            <div class="pagination-container">
+                <div class="pagination-info">
+                    Affichage de <span id="startItemBanner">1</span> à <span id="endItemBanner">9</span> sur <span id="totalItemsBanner">0</span> bannières
+                </div>
+                <ul class="pagination" id="paginationBanner">
+                    <!-- Pagination sera générée dynamiquement -->
+                </ul>
+            </div>
+        </div>
+    </div>
+    <!-- La SECTION BANNERS -->
+
+    <!-- Modal pour Ajouter/Éditer une Bannière -->
+    <div class="modal-overlay" id="bannerModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="bannerModalTitle">Ajouter une bannière</h3>
+                <button class="modal-close" onclick="closeModal('bannerModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="bannerForm">
+                    <input type="hidden" name="bannerId" id="bannerId">
+                    <div class="form-group">
+                        <label class="form-label">Nom de l'image</label>
+                        <input type="text" class="form-input" name="imageName" id="bannerImageName" placeholder="Exemple: mybanner.jpg" required>
+                        <small class="form-text text-muted">Le nom de l'image sera ajouté à la base https://apigede.wortispay.cg/apk-mobile/banner_service/</small>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Aperçu</label>
+                        <div class="banner-preview">
+                            <img id="bannerPreview" src="#" alt="Aperçu de la bannière" style="max-width: 100%; display: none;">
+                            <div id="bannerPreviewPlaceholder" class="banner-preview-placeholder">
+                                L'aperçu apparaîtra ici
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('bannerModal')">Annuler</button>
+                <button class="btn btn-primary" id="saveBannerBtn">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+    <!-- Modal pour Ajouter/Éditer une Bannière -->
+
+    <!-- Autres pages (à implémenter ultérieurement) -->
+    <div class="page" id="wallets-page" style="display: none;">
+        <div class="content-header">
+            <h2 class="content-title">Gestion des Portefeuilles</h2>
+        </div>
+    
+        <div class="card">
+            <div class="card-header">
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" id="searchWallet" placeholder="Rechercher un utilisateur...">
+                </div>
+            </div>
+    
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nom</th>
+                            <th>Téléphone</th>
+                            <th>Miles</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="walletsTableBody">
+                        <!-- Table content will be dynamically populated -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="pagination-container">
+                <div class="pagination-info">
+                    Affichage de <span id="startItemWallet">1</span> à <span id="endItemWallet">10</span> sur <span id="totalItemsWallet">0</span> portefeuilles
+                </div>
+                <ul class="pagination" id="paginationWallet">
+                    <!-- Pagination sera générée dynamiquement -->
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal pour Mettre à jour les Miles -->
+    <div class="modal-overlay" id="updateMilesModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Mettre à jour les Miles</h3>
+                <button class="modal-close" onclick="closeModal('updateMilesModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="updateMilesForm">
+                    <input type="hidden" name="userId" id="updateMilesUserId">
+                    <div class="form-group">
+                        <label class="form-label">Nom d'utilisateur</label>
+                        <input type="text" class="form-input" id="updateMilesUserName" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Miles actuels</label>
+                        <input type="number" class="form-input" id="updateMilesCurrentMiles" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Nouveau nombre de Miles</label>
+                        <input type="number" class="form-input" name="newMiles" id="updateMilesNewMiles" required min="0">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('updateMilesModal')">Annuler</button>
+                <button class="btn btn-primary" id="saveMilesBtn">Mettre à jour</button>
+            </div>
+        </div>
+    </div>   
+
+
+        <!-- Modal pour Ajouter/Éditer un Secteur d'Activité -->
+        <div class="modal-overlay" id="secteurModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="secteurModalTitle">Ajouter un secteur d'activité</h3>
+                    <button class="modal-close" onclick="closeModal('secteurModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="secteurForm">
+                        <input type="hidden" name="secteurId" id="secteurId">
+                        <div class="form-group">
+                            <label class="form-label">Nom du secteur</label>
+                            <input type="text" class="form-input" name="name" id="secteurName" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Icône (nom FontAwesome)</label>
+                            <input type="text" class="form-input" name="icon" id="secteurIcon" placeholder="Exemple: building">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Rang (ordre d'affichage)</label>
+                            <input type="number" class="form-input" name="rang" id="secteurRang" min="1" value="1">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline" onclick="closeModal('secteurModal')">Annuler</button>
+                    <button class="btn btn-primary" id="saveSecteurBtn">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+
+    <!-- Add User Modal -->
+    <div class="modal-overlay" id="addUserModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-user-plus"></i> Ajouter un utilisateur</h3>
+                <button class="modal-close" onclick="closeModal('addUserModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="addUserForm">
+                    <div class="form-group">
+                        <label class="form-label">Nom complet</label>
+                        <input type="text" class="form-input" name="nom" required placeholder="Entrez le nom complet">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Numéro de téléphone</label>
+                        <input type="tel" class="form-input" name="phone_number" required placeholder="Ex: +242 06 123 4567">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Mot de passe</label>
+                        <input type="password" class="form-input" name="password" required placeholder="Entrez un mot de passe">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Statut</label>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <label class="switch">
+                                <input type="checkbox" checked name="status">
+                                <span class="slider"></span>
+                            </label>
+                            <span>Actif</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('addUserModal')">Annuler</button>
+                <button class="btn btn-primary" onclick="submitAddUser()">
+                    <i class="fas fa-plus"></i> Ajouter
+                </button>
+            </div>
+        </div>
+    </div>
+
+      <!-- Edit User Modal -->
+      <div class="modal-overlay" id="editUserModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-user-edit"></i> Modifier l'utilisateur</h3>
+                <button class="modal-close" onclick="closeModal('editUserModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="editUserForm">
+                    <input type="hidden" name="userId">
+                    <input type="hidden" name="userToken">
+                    <div class="form-group">
+                        <label class="form-label">Nom complet</label>
+                        <input type="text" class="form-input" name="nom" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Numéro de téléphone</label>
+                        <input type="tel" class="form-input" name="phone_number" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Statut</label>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <label class="switch">
+                                <input type="checkbox" checked name="status">
+                                <span class="slider"></span>
+                            </label>
+                            <span>Actif</span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('editUserModal')">Annuler</button>
+                <button class="btn btn-primary" onclick="submitEditUser()">
+                    <i class="fas fa-save"></i> Enregistrer
+                </button>
+            </div>
+        </div>
+    </div>
+
+     <!-- Delete Confirmation Modal -->
+     <div class="modal-overlay" id="deleteUserModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-exclamation-triangle"></i> Confirmer la suppression</h3>
+                <button class="modal-close" onclick="closeModal('deleteUserModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-20">
+                    <i class="fas fa-trash-alt" style="font-size: 48px; color: var(--danger-color); margin-bottom: 20px;"></i>
+                    <p>Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est irréversible.</p>
+                </div>
+                <input type="hidden" id="deleteUserId">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('deleteUserModal')">Annuler</button>
+                <button class="btn btn-danger" onclick="confirmDeleteUser()">
+                    <i class="fas fa-trash-alt"></i> Supprimer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success/Error Toast -->
+    <div class="toast" id="toast">
+        <i class="toast-icon fas fa-check-circle"></i>
+        <span class="toast-message"></span>
+    </div>
+
+    <!-- Section Notificationd -->
+    <div class="page" id="notifications-page" style="display: none;">
+        <div class="content-header">
+            <h2 class="content-title">Gestion des Notifications</h2>
+            <button class="btn btn-primary" id="createNotificationBtn">
+                <i class="fas fa-paper-plane"></i> Envoyer une notification
+            </button>
+        </div>
+    
+        <div class="card">
+            <div class="card-header">
+                <div class="search-container">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" class="search-input" id="searchNotification" placeholder="Rechercher une notification...">
+                </div>
+                <div class="filter-container">
+                    <select class="form-input" id="filterNotificationType">
+                        <option value="">Tous les types</option>
+                        <option value="info">Information</option>
+                        <option value="promo">Promotion</option>
+                        <option value="alert">Alerte</option>
+                        <option value="system">Système</option>
+                    </select>
+                    <select class="form-input" id="filterNotificationStatus">
+                        <option value="">Tous les statuts</option>
+                        <option value="sent">Envoyée</option>
+                        <option value="pending">En attente</option>
+                        <option value="scheduled">Programmée</option>
+                    </select>
+                </div>
+            </div>
+    
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Date d'envoi</th>
+                            <th>Titre</th>
+                            <th>Contenu</th>
+                            <th>Type</th>
+                            <th>Destinataires</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="notificationsTableBody">
+                        <!-- Table content will be dynamically populated -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="pagination-container">
+                <div class="pagination-info">
+                    Affichage de <span id="startItemNotification">1</span> à <span id="endItemNotification">10</span> sur <span id="totalItemsNotification">0</span> notifications
+                </div>
+                <ul class="pagination" id="paginationNotification">
+                    <!-- Pagination sera générée dynamiquement -->
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Statistiques (en option) -->
+        <div class="row stats-container">
+            <div class="stats-card">
+                <h3>Notifications ce mois</h3>
+                <div class="stats-value" id="notificationsThisMonth">0</div>
+                <div class="stats-trend up">+5% <i class="fas fa-arrow-up"></i></div>
+            </div>
+            <div class="stats-card">
+                <h3>Taux d'ouverture moyen</h3>
+                <div class="stats-value" id="averageOpenRate">0%</div>
+                <div class="stats-trend down">-2% <i class="fas fa-arrow-down"></i></div>
+            </div>
+            <div class="stats-card">
+                <h3>Utilisateurs actifs</h3>
+                <div class="stats-value" id="activeUsers">0</div>
+                <div class="stats-trend up">+3% <i class="fas fa-arrow-up"></i></div>
+            </div>
+        </div>
+    </div>
+    <!-- Section Notificationd -->
+
+    <!-- Modal pour Créer/Éditer une Notification -->
+    <div class="modal-overlay" id="notificationModal">
+        <div class="modal modal-large-xl">
+            <div class="modal-header">
+                <h3 class="modal-title" id="notificationModalTitle">
+                    <i class="fas fa-paper-plane"></i> Envoyer une notification ciblée
+                </h3>
+                <button class="modal-close" onclick="closeModal('notificationModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="notification-form-container-new">
+                    <!-- Formulaire de notification -->
+                    <div class="notification-form-section">
+                        <form id="notificationForm" class="notification-form">
+                            <!-- Étape 1: Contenu de la notification -->
+                            <div class="form-section">
+                                <div class="form-section-header">
+                                    <i class="fas fa-edit"></i>
+                                    <h4>Contenu de la notification</h4>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Titre de la notification</label>
+                                    <input type="text" class="form-input" id="notificationTitle" name="title" placeholder="Ex: Nouvelle promotion sur vos services favoris" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Message</label>
+                                    <textarea class="form-input" id="notificationContent" name="content" rows="4" placeholder="Rédigez votre message ici..." required></textarea>
+                                    <small class="char-counter"><span id="charCount">0</span>/200 caractères</small>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group form-group-half">
+                                        <label class="form-label">Type de notification</label>
+                                        <select class="form-input" id="notificationType" name="type" required>
+                                            <option value="info">📋 Information</option>
+                                            <option value="promo">🎁 Promotion</option>
+                                            <option value="alert">⚠️ Alerte</option>
+                                            <option value="system">⚙️ Système</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group form-group-half">
+                                        <label class="form-label">Priorité</label>
+                                        <select class="form-input" id="notificationPriority" name="priority">
+                                            <option value="normal">Normale</option>
+                                            <option value="high">Élevée</option>
+                                            <option value="urgent">Urgente</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Étape 2: Ciblage des destinataires -->
+                            <div class="form-section">
+                                <div class="form-section-header">
+                                    <i class="fas fa-bullseye"></i>
+                                    <h4>Ciblage des destinataires</h4>
+                                </div>
+
+                                <!-- Compteur de destinataires -->
+                                <div class="recipients-counter">
+                                    <div class="counter-icon">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    <div class="counter-info">
+                                        <div class="counter-label">Destinataires ciblés</div>
+                                        <div class="counter-value" id="recipientsCount">0</div>
+                                    </div>
+                                </div>
+
+                                <!-- Mode de ciblage -->
+                                <div class="form-group">
+                                    <label class="form-label">Mode de ciblage</label>
+                                    <div class="targeting-mode-selector">
+                                        <label class="targeting-card">
+                                            <input type="radio" name="targetingMode" value="all" checked>
+                                            <div class="targeting-card-content">
+                                                <i class="fas fa-globe"></i>
+                                                <span>Tous les utilisateurs</span>
+                                            </div>
+                                        </label>
+                                        <label class="targeting-card">
+                                            <input type="radio" name="targetingMode" value="services">
+                                            <div class="targeting-card-content">
+                                                <i class="fas fa-th-large"></i>
+                                                <span>Par services</span>
+                                            </div>
+                                        </label>
+                                        <label class="targeting-card">
+                                            <input type="radio" name="targetingMode" value="custom">
+                                            <div class="targeting-card-content">
+                                                <i class="fas fa-user-check"></i>
+                                                <span>Personnalisé</span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Ciblage par services -->
+                                <div class="form-group targeting-section" id="servicesTargeting" style="display: none;">
+                                    <label class="form-label">Sélectionner les services</label>
+                                    <div class="search-container mb-15">
+                                        <i class="fas fa-search search-icon"></i>
+                                        <input type="text" class="search-input" id="searchServices" placeholder="Rechercher un service...">
+                                    </div>
+                                    <div class="services-grid" id="servicesGrid">
+                                        <!-- Les services seront chargés dynamiquement depuis l'API -->
+                                    </div>
+                                </div>
+
+                                <!-- Ciblage personnalisé -->
+                                <div class="form-group targeting-section" id="customTargeting" style="display: none;">
+                                    <label class="form-label">Sélection d'utilisateurs spécifiques</label>
+                                    <div class="custom-filters">
+                                        <div class="form-group">
+                                            <label class="form-label">Rechercher un utilisateur</label>
+                                            <div class="search-container mb-15">
+                                                <i class="fas fa-search search-icon"></i>
+                                                <input type="text" class="search-input" id="searchSpecificUsers" placeholder="Rechercher par nom, téléphone ou ID utilisateur...">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Utilisateurs sélectionnés (<span id="selectedUsersCount">0</span>)</label>
+                                            <div class="selected-users-container" id="selectedUsersContainer">
+                                                <div class="empty-state">
+                                                    <i class="fas fa-users"></i>
+                                                    <p>Aucun utilisateur sélectionné</p>
+                                                    <small>Utilisez la recherche ci-dessus pour trouver et sélectionner des utilisateurs</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Liste des utilisateurs disponibles</label>
+                                            <div class="users-list-container" id="customUsersListContainer">
+                                                <!-- Les utilisateurs seront listés ici -->
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Étape 3: Programmation -->
+                            <div class="form-section">
+                                <div class="form-section-header">
+                                    <i class="fas fa-clock"></i>
+                                    <h4>Programmation de l'envoi</h4>
+                                </div>
+                                <div class="form-group">
+                                    <div class="schedule-options">
+                                        <label class="radio-label-modern">
+                                            <input type="radio" name="schedule" value="immediate" checked>
+                                            <div class="radio-content">
+                                                <i class="fas fa-bolt"></i>
+                                                <span>Envoi immédiat</span>
+                                            </div>
+                                        </label>
+                                        <label class="radio-label-modern">
+                                            <input type="radio" name="schedule" value="scheduled">
+                                            <div class="radio-content">
+                                                <i class="fas fa-calendar-alt"></i>
+                                                <span>Programmer</span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="form-group" id="scheduleDateContainer" style="display: none;">
+                                    <label class="form-label">Date et heure d'envoi</label>
+                                    <input type="datetime-local" class="form-input" id="scheduleDate" name="scheduleDate">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Prévisualisation améliorée -->
+                    <div class="notification-preview-section">
+                        <div class="preview-sticky">
+                            <h4><i class="fas fa-eye"></i> Prévisualisation</h4>
+                            <div class="phone-mockup">
+                                <div class="phone-notch"></div>
+                                <div class="phone-header">
+                                    <div class="phone-time">14:30</div>
+                                    <div class="phone-icons">
+                                        <i class="fas fa-wifi"></i>
+                                        <i class="fas fa-signal"></i>
+                                        <i class="fas fa-battery-three-quarters"></i>
+                                    </div>
+                                </div>
+                                <div class="phone-content">
+                                    <div class="notification-card">
+                                        <div class="notification-card-header">
+                                            <img src="img/wortis_bleu.png" alt="WortisPay" class="notification-logo">
+                                            <div class="notification-app-name">WortisPay</div>
+                                            <div class="notification-time">à l'instant</div>
+                                        </div>
+                                        <div class="notification-card-title" id="previewTitle">Titre de la notification</div>
+                                        <div class="notification-card-content" id="previewContent">Contenu de la notification...</div>
+                                        <div class="notification-card-icon">
+                                            <i class="fas fa-info-circle" id="previewIcon"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Résumé de l'envoi -->
+                            <div class="send-summary">
+                                <h5>Résumé de l'envoi</h5>
+                                <div class="summary-item">
+                                    <i class="fas fa-users"></i>
+                                    <span><strong id="summaryRecipients">0</strong> destinataires</span>
+                                </div>
+                                <div class="summary-item">
+                                    <i class="fas fa-clock"></i>
+                                    <span id="summarySchedule">Envoi immédiat</span>
+                                </div>
+                                <div class="summary-item">
+                                    <i class="fas fa-tag"></i>
+                                    <span id="summaryType">Information</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('notificationModal')">
+                    <i class="fas fa-times"></i> Annuler
+                </button>
+                <button class="btn btn-primary" id="saveNotificationBtn">
+                    <i class="fas fa-paper-plane"></i> Envoyer la notification
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <!-- Modal pour Créer/Éditer une Notification -->
+<script src="functions/main.js"></script>
+<script src="functions/gas.js"></script>
+<script src="functions/user.js"></script>
+<script src="functions/wallet.js"></script>
+<script src="functions/dashboard.js"></script>
+<script src="functions/secteurs.js"></script>
+<script src="functions/banner.js"></script>
+<script src="functions/service.js"></script>
+<script src="functions/notif.js"></script>
+<script src="functions/news.js"></script>
 </body>
 </html>
